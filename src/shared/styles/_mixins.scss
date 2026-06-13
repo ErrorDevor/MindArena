@@ -1,0 +1,282 @@
+@use "sass:list";
+@use "shared/styles/vars" as *;
+
+// Color
+@function getColorBlack($opacity: 1) {
+   @return rgba($colorBlack, $opacity);
+}
+
+@function getColorWhite($opacity: 1) {
+   @return rgba($colorWhite, $opacity);
+}
+
+@function getColorAccent($opacity: 1) {
+   @return rgba($colorAccent, $opacity);
+}
+
+@function getColorWarning($opacity: 1) {
+   @return rgba($colorWarning, $opacity);
+}
+
+// Font
+@mixin optimizedFontFace($name, $weight, $url, $ttf: true, $style: normal) {
+   @font-face {
+      font-family: $name;
+      font-weight: $weight;
+      font-style: $style;
+      font-display: block;
+      @if $ttf {
+         src:
+            url("#{$url}.woff2") format("woff2"),
+            url("#{$url}.woff") format("woff"),
+            url("#{$url}.ttf") format("truetype"),
+            url("#{$url}.eot") format("embedded-opentype");
+      } @else {
+         src:
+            url("#{$url}.woff2") format("woff2"),
+            url("#{$url}.woff") format("woff"),
+            url("#{$url}.otf") format("opentype"),
+            url("#{$url}.eot") format("embedded-opentype");
+      }
+   }
+}
+
+@mixin fontFace($name, $weight, $src, $style: normal) {
+   @font-face {
+      font-family: $name;
+      font-weight: $weight;
+      font-style: $style;
+      font-display: swap;
+      src: url($src);
+   }
+}
+
+@mixin fontDefault(
+   $fontSize: 16px,
+   $leading: 1.25,
+   $letterSpacing: normal,
+   $fontWeight: 400,
+   $color: false,
+   $isItalic: false
+) {
+   font: $fontWeight $fontSize/#{$leading} $default-font;
+   letter-spacing: $letterSpacing;
+   @if ($isItalic) {
+      font-style: $isItalic;
+   }
+   @if ($color) {
+      color: $color;
+   }
+}
+
+@mixin fontPlusJakarta(
+   $fontSize: 16px,
+   $leading: 1.25,
+   $letterSpacing: normal,
+   $fontWeight: 400,
+   $color: false,
+   $isItalic: false
+) {
+   font: $fontWeight $fontSize/#{$leading} $fontPlusJakarta;
+   letter-spacing: $letterSpacing;
+   @if ($isItalic) {
+      font-style: $isItalic;
+   }
+   @if ($color) {
+      color: $color;
+   }
+}
+
+@mixin fontF37Lineca(
+   $fontSize: null,
+   $leading: null,
+   $letterSpacing: null,
+   $fontWeight: null,
+   $color: null,
+   $isItalic: null
+) {
+   font-family: $fontF37Lineca;
+
+   @if $fontSize != null {
+      font-size: $fontSize;
+   }
+
+   @if $leading != null {
+      line-height: $leading;
+   }
+
+   @if $letterSpacing != null {
+      letter-spacing: $letterSpacing;
+   }
+
+   @if $fontWeight != null {
+      font-weight: $fontWeight;
+   }
+
+   @if $isItalic != null {
+      font-style: $isItalic;
+   }
+
+   @if $color != null {
+      color: $color;
+   }
+}
+
+// Create Box, Circle, etc.
+@mixin box($width, $height: $width) {
+   width: $width;
+   height: $height;
+}
+
+// Flex Center Box
+@mixin flexCenter {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+@mixin flexWrap($cols, $gapRow, $gapCol: $gapRow, $selector: li) {
+   display: flex;
+   flex-wrap: wrap;
+   gap: #{$gapCol}px #{$gapRow}px;
+
+   > #{$selector} {
+      @include setFlexedGrid($cols, $gapRow);
+   }
+}
+
+@mixin setFlexedGrid($cols, $gap) {
+   flex: 0 0 calc(#{100% / $cols} - #{$gap * ($cols - 1) / $cols}px);
+   max-width: calc(#{100% / $cols} - #{$gap * ($cols - 1) / $cols}px);
+}
+
+// Image Prop
+@mixin imageCover($fit: cover, $position: center, $radius: inherit) {
+   width: 100%;
+   height: 100%;
+   object-fit: $fit;
+   object-position: $position;
+   border-radius: $radius;
+}
+
+@mixin imageContain {
+   width: 100%;
+   height: 100%;
+   object-fit: contain;
+   object-position: center;
+}
+
+// Gradient Border & Text
+@mixin textGradient($bgColor) {
+   background: $bgColor;
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   background-clip: text;
+   text-fill-color: transparent;
+}
+
+@mixin strokeGradient($bgColor, $strokeColor, $borderWidth: 1px) {
+   border: $borderWidth solid transparent;
+   background: $bgColor, $strokeColor;
+   background-clip: padding-box, border-box;
+   background-origin: padding-box, border-box;
+}
+
+// Animation
+@mixin transition($properties, $duration: 0.3s, $timing: ease, $delay: 0s) {
+   $transitions: ();
+
+   @each $property in $properties {
+      $transitions: list.append(
+         $transitions,
+         #{$property} #{$duration} #{$timing} #{$delay},
+         comma
+      );
+   }
+
+   transition: $transitions;
+}
+
+// Example
+// @include transition((opacity));
+// @include transition((opacity, transform));
+// @include transition((background-color, border-color, color));
+// @include transition((fill, stroke, background-color, transform), 0.4s);
+
+// Width Container
+@mixin setContainer($px) {
+   max-width: $px;
+   width: 100%;
+   margin: 0 auto;
+}
+
+// Media
+@function mediaCondition($mobileFirst) {
+   @if $mobileFirst {
+      @return "min-width";
+   } @else {
+      @return "max-width";
+   }
+}
+
+@mixin screenMedia($condition: "min-width", $size) {
+   @media screen and (#{$condition}: $size) {
+      @content;
+   }
+}
+
+@mixin screenXS($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $xs + $offset) {
+      @content;
+   }
+}
+
+@mixin screenSM($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $sm + $offset) {
+      @content;
+   }
+}
+
+@mixin screenMD($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $md + $offset) {
+      @content;
+   }
+}
+
+@mixin screenLG($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $lg + $offset) {
+      @content;
+   }
+}
+
+@mixin screenXL($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $xl + $offset) {
+      @content;
+   }
+}
+
+@mixin screenXXL($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $xxl + $offset) {
+      @content;
+   }
+}
+
+@mixin screenXXXL($offset: 0px, $mobileFirst: false) {
+   $condition: mediaCondition($mobileFirst);
+
+   @include screenMedia($condition, $xxxl + $offset) {
+      @content;
+   }
+}

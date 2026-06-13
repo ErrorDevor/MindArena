@@ -1,0 +1,23 @@
+@use "shared/styles/vars" as *;
+
+html {
+   font-size: 62.5%;
+
+   @media screen and (min-width: 2000px) {
+      font-size: 0.48vw;
+   }
+}
+
+// * {
+//    outline: 0.1rem solid red;
+// }
+
+body {
+   display: flex;
+   flex-direction: column;
+   background: $colorWhite;
+   min-height: 100vh;
+   font-size: 1.6rem;
+   font-family: $fontPlusJakarta;
+   color: $colorBlack;
+}
