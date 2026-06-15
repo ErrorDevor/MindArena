@@ -15,9 +15,9 @@ html {
 body {
    display: flex;
    flex-direction: column;
-   background: $colorWhite;
+   background: $colorBackground;
    min-height: 100vh;
    font-size: 1.6rem;
-   font-family: $fontPlusJakarta;
+   font-family: $fontInterTight;
    color: $colorBlack;
 }

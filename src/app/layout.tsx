@@ -1,11 +1,11 @@
 import "shared/styles/index.scss";
 
 import { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter_Tight } from "next/font/google";
 
-const plusJakarta = Plus_Jakarta_Sans({
+const interTight = Inter_Tight({
    subsets: ["latin"],
-   variable: "--font-plus-jakarta",
+   variable: "--font-inter-tight",
    display: "swap",
    preload: true,
 });
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
    title: "Mind Arena",
    description: "Mind Arena",
    icons: {
-      icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+      icon: [{ url: "/favicon.png", type: "image/svg+xml" }],
       apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
    },
 };
@@ -25,16 +25,7 @@ export default function RootLayout({
    children: React.ReactNode;
 }>) {
    return (
-      <html lang="en" className={plusJakarta.variable}>
-         <head>
-            <link
-               rel="preload"
-               href="/fonts/F37-Lineca-Cyrillic-VF/F37LinecaCyrillic-VF.woff2"
-               as="font"
-               type="font/woff2"
-               crossOrigin="anonymous"
-            />
-         </head>
+      <html lang="en" className={interTight.variable}>
          <body>{children}</body>
       </html>
    );

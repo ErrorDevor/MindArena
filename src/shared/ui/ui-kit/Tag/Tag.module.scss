@@ -1,0 +1,30 @@
+.tag {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+   width: fit-content;
+   padding: 1rem 1.2rem;
+   
+
+   &_hashtag {
+      @include flexCenter();
+      width: 1.6rem;
+      height: 1.6rem;
+      flex-shrink: 0;
+      background: rgba(3, 85, 205, 0.1);
+      border-radius: 0.5rem;
+      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorAccent(1));
+   }
+
+   P {
+      @include fontInterTight(1.4rem, 1, 0, 500);
+      color: getColorBlack(0.6);
+      @include transition((color));
+   }
+
+   &:hover {
+      p {
+         color: getColorBlack(1);
+      }
+   }
+}

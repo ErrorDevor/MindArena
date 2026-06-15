@@ -1,0 +1,68 @@
+.avatar {
+   @include flexCenter();
+   width: 2.4rem;
+   height: 2.4rem;
+   flex-shrink: 0;
+   border-radius: 10rem;
+   background: getColorWhite(1);
+
+   &_border {
+      @include flexCenter();
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      padding: 0.1rem;
+   }
+
+   &_inner {
+      @include flexCenter();
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      @include fontInterTight(1.2rem, 1, -0.02em, 500);
+   }
+
+   &_blue {
+      .avatar_border {
+         background: rgba(8, 110, 167, 0.2);
+      }
+
+      .avatar_inner {
+         color: #0473af;
+         background: linear-gradient(180deg, #bae7ff 0%, #94d9ff 100%);
+      }
+   }
+
+   &_orange {
+      .avatar_border {
+         background: rgba(178, 89, 7, 0.2);
+      }
+
+      .avatar_inner {
+         color: #c0630f;
+         background: linear-gradient(180deg, #f7d6b2 0%, #fac283 100%);
+      }
+   }
+
+   &_green {
+      .avatar_border {
+         background: rgba(15, 89, 25, 0.2);
+      }
+
+      .avatar_inner {
+         color: #0f5919;
+         background: linear-gradient(180deg, #b9f3c4 0%, #a9f1b3 100%);
+      }
+   }
+
+   &_purple {
+      .avatar_border {
+         background: rgba(131, 32, 177, 0.2);
+      }
+
+      .avatar_inner {
+         color: #7f1eb1;
+         background: linear-gradient(180deg, #f0ccff 0%, #e9b3fe 100%);
+      }
+   }
+}

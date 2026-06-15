@@ -1,11 +1,31 @@
-import { StartPage } from "screens/00-Start/ui/StartPage";
+"use client";
+
+import React from "react";
+
+import { Content } from "screens/01-Content/ui/Content";
+
+import { Header } from "widgets/Header";
+import { Sidebar } from "widgets/Sidebar";
+
+import { AppLayout } from "shared/ui/templates/AppLayout";
 
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-   try {
-      return <><StartPage /></>;
-   } catch (error) {
-      return null;
-   }
+   const [collapsed, setCollapsed] = React.useState(false);
+
+   return (
+      <AppLayout
+         isSidebarCollapsed={collapsed}
+         header={<Header />}
+         sidebar={
+            <Sidebar
+               collapsed={collapsed}
+               onToggleCollapsed={() => setCollapsed((prev) => !prev)}
+            />
+         }
+      >
+         <Content />
+      </AppLayout>
+   );
 }

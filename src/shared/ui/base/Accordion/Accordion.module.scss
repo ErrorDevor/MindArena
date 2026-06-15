@@ -1,0 +1,24 @@
+@include layer-ui {
+  .button {
+    cursor: pointer;
+  }
+  .content {
+    overflow: hidden;
+    &[data-initial-open="false"] {
+      height: 0px;
+    }
+  }
+
+  .accordeon_disabled {
+    .button {
+      cursor: default;
+    }
+  }
+
+  .accordeon_smooth {
+    .content {
+      transition-property: height;
+      transition-timing-function: ease;
+    }
+  }
+}

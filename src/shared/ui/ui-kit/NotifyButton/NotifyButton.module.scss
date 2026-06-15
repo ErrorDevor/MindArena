@@ -1,0 +1,49 @@
+.notify_button {
+   position: relative;
+   isolation: isolate;
+   @include flexCenter();
+   width: 3.6rem;
+   height: 3.6rem;
+   padding: 0;
+   background: getColorWhite(1);
+   border: 0.1rem solid rgba(0, 0, 0, 0.1);
+   border-radius: 1rem;
+   cursor: pointer;
+   @include transition((border-color, box-shadow, background));
+
+   &:hover {
+      border-color: rgba(0, 0, 0, 0.16);
+      box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.06);
+   }
+
+   &_icon {
+      @include flexCenter();
+      width: 2.4rem;
+      height: 2.4rem;
+
+      svg {
+         width: 1.6rem;
+         height: 2.4rem;
+         fill: #322318;
+      }
+   }
+
+   &_count {
+      position: absolute;
+      top: -0.4rem;
+      right: -0.4rem;
+      z-index: 2;
+      @include flexCenter();
+      min-width: 1.4rem;
+      height: 1.4rem;
+      background: getColorAccent();
+      border-radius: 10rem;
+
+      @include fontInterTight(1rem, 1, -0.01em, 500, getColorWhite(1));
+   }
+
+   &:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+   }
+}
