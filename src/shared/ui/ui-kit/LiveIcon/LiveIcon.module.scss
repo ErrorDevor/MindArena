@@ -1,0 +1,44 @@
+.live_icon {
+   @include flexCenter();
+   @include box(2rem);
+   flex-shrink: 0;
+   border-radius: 10rem;
+   padding: 0.3rem;
+
+   @include strokeGradient(
+      linear-gradient(#f7f7f7, #f7f7f7),
+      linear-gradient(
+         to bottom,
+         rgba(255, 21, 60, 0.2) 0%,
+         getColorWarning(1) 46%,
+         rgba(255, 21, 60, 0.2) 100%
+      )
+   );
+   border-width: 0.1rem;
+
+   span {
+      @include box(100%);
+      flex-shrink: 0;
+      border-radius: 10rem;
+
+      background: getColorWarning(1);
+      border: 0.1rem solid #c81734cc;
+      box-shadow:
+         0px 2px 8px rgba(255, 21, 59, 0.8),
+         inset 0px 2px 2px rgba(255, 255, 255, 0.5);
+
+      transform-origin: center;
+      animation: liveIconPulse 2.4s ease-in-out infinite;
+   }
+}
+
+@keyframes liveIconPulse {
+   0%,
+   100% {
+      transform: scale(1);
+   }
+
+   50% {
+      transform: scale(0.82);
+   }
+}

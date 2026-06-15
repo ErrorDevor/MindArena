@@ -18,6 +18,10 @@
    @return rgba($colorWarning, $opacity);
 }
 
+@function getColorBackground($opacity: 1) {
+   @return rgba($colorBackground, $opacity);
+}
+
 // Font
 @mixin optimizedFontFace($name, $weight, $url, $ttf: true, $style: normal) {
    @font-face {
@@ -69,7 +73,7 @@
    }
 }
 
-@mixin fontPlusJakarta(
+@mixin fontInterTight(
    $fontSize: 16px,
    $leading: 1.25,
    $letterSpacing: normal,
@@ -77,47 +81,12 @@
    $color: false,
    $isItalic: false
 ) {
-   font: $fontWeight $fontSize/#{$leading} $fontPlusJakarta;
+   font: $fontWeight $fontSize/#{$leading} $fontInterTight;
    letter-spacing: $letterSpacing;
    @if ($isItalic) {
       font-style: $isItalic;
    }
    @if ($color) {
-      color: $color;
-   }
-}
-
-@mixin fontF37Lineca(
-   $fontSize: null,
-   $leading: null,
-   $letterSpacing: null,
-   $fontWeight: null,
-   $color: null,
-   $isItalic: null
-) {
-   font-family: $fontF37Lineca;
-
-   @if $fontSize != null {
-      font-size: $fontSize;
-   }
-
-   @if $leading != null {
-      line-height: $leading;
-   }
-
-   @if $letterSpacing != null {
-      letter-spacing: $letterSpacing;
-   }
-
-   @if $fontWeight != null {
-      font-weight: $fontWeight;
-   }
-
-   @if $isItalic != null {
-      font-style: $isItalic;
-   }
-
-   @if $color != null {
       color: $color;
    }
 }
@@ -279,4 +248,12 @@
    @include screenMedia($condition, $xxxl + $offset) {
       @content;
    }
+}
+
+@layer defaults, ui, components, styled-components;
+
+@mixin layer-ui {
+    @layer ui {
+        @content;
+    }
 }

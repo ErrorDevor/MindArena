@@ -1,0 +1,27 @@
+.account_button {
+   @include flexCenter();
+   @include box(3.6rem);
+
+   flex-shrink: 0;
+   overflow: hidden;
+   background: rgba(136, 180, 211, 0.2);
+   padding: 0.3rem;
+   border-radius: 1rem;
+
+   &_inner {
+      border-radius: 0.8rem;
+      overflow: hidden;
+      @include flexCenter();
+      @include box(3.3rem);
+
+      img {
+         border-radius: 0.8rem;
+      }
+   }
+
+   @include transition((box-shadow));
+
+   &:hover {
+      box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.06);
+   }
+}

@@ -1,0 +1,48 @@
+.search {
+   display: flex;
+   align-items: center;
+   padding: 0.6rem 1.2rem;
+   gap: 0.8rem;
+   width: 100%;
+   max-width: 31.4rem;
+   height: 3.6rem;
+
+   background: rgba(188, 188, 188, 0.15);
+   border-radius: 0.6rem;
+
+   svg {
+      width: 2.4rem;
+      height: 2.4rem;
+      flex-shrink: 0;
+      fill: getColorBlack(0.3);
+   }
+
+   &_info {
+      @include flexCenter();
+      flex-shrink: 0;
+      padding: 0 0.6rem;
+      gap: 0.2rem;
+      height: 2rem;
+      background: getColorWhite(1);
+      border-radius: 0.5rem;
+      @include fontInterTight(1rem, 1, -0.01em, 500, getColorBlack(0.3));
+
+      svg {
+         width: 1.2rem;
+         fill: getColorBlack(0.3);
+
+         stroke-opacity: 0.3;
+      }
+   }
+}
+
+.input {
+   width: 100%;
+   height: 100%;
+
+   @include fontInterTight(1.4rem, 1, 0, 500, getColorBlack(0.3));
+
+   background: transparent;
+   border: none;
+   outline: none;
+}

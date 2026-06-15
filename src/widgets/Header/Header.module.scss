@@ -1,10 +1,62 @@
 .header {
-   position: fixed;
-   top: 0;
-   left: 50%;
-   transform: translateX(-50%);
    display: flex;
    align-items: center;
    justify-content: space-between;
-   @include setContainer(160rem);
+   height: 8.8rem;
+   min-height: 8.8rem;
+   padding: 0 2.6rem;
+
+   &_left_side,
+   &_right_side {
+      display: flex;
+      align-items: center;
+      gap: 2.4rem;
+   }
+
+   &_logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      @include fontInterTight(2.4rem, 1, -0.01em, 500, getColorBlack(1));
+   }
+
+   &_main_buttons,
+   &_action_buttons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+   }
+
+   &_action_buttons {
+      gap: 0.8rem;
+   }
+
+   &_account_block {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+   }
+}
+
+.divider {
+   width: 0.1rem;
+   height: 3rem;
+   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.button_inquiry,
+.button_build {
+   width: 13rem;
+   height: 3.6rem;
+   svg {
+      width: 1.6rem;
+      stroke: getColorWhite(1);
+   }
+}
+
+.button_action {
+   svg {
+      width: 2rem;
+      fill: getColorBlack(1);
+   }
 }
