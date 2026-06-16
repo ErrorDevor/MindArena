@@ -10,21 +10,26 @@ import css from "./Search.module.scss";
 
 interface Prop {
    className?: string;
+   placeholder?: string;
+   withInfo?: boolean;
 }
 
-export const Search: React.FC<Prop> = ({ className }) => {
+export const Search: React.FC<Prop> = ({
+   className,
+   placeholder = "Search inquiries, topics, tags...",
+   withInfo = true,
+}) => {
    return (
       <div className={clsx(css.search, className)}>
          <SearchIcon />
 
-<input
-   type="text"
-   placeholder="Search inquiries, topics, tags..."
-   className={css.input}
-/>
-         <div className={css.search_info}>
-            <MacKeyIcon /> + K
-         </div>
+         <input type="text" placeholder={placeholder} className={css.input} />
+
+         {withInfo && (
+            <div className={css.search_info}>
+               <MacKeyIcon /> + K
+            </div>
+         )}
       </div>
    );
 };

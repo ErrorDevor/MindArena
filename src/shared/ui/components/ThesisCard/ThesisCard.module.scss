@@ -1,0 +1,115 @@
+.thesis_card {
+   width: 100%;
+   padding: 0.4rem;
+   border-radius: 1.2rem;
+
+   &_header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.8rem 0 0.6rem 0;
+
+      @include fontInterTight(1.3rem, 1, -0.01em, 400, getColorBlack(0.7));
+
+      svg {
+         width: 0.5rem;
+      }
+   }
+
+   &_content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 4rem;
+      padding: 1.2rem 1.4rem;
+      border-radius: 1rem;
+      background: getColorWhite(1);
+      @include fontInterTight(1.4rem, 1.8, -0.01em, 400, getColorBlack(1));
+      text-align: center;
+   }
+
+   &_before {
+      background:
+         linear-gradient(
+            90.26deg,
+            rgba(249, 174, 93, 0.4) 12.82%,
+            rgba(255, 203, 148, 0.4) 78.98%,
+            rgba(255, 227, 196, 0.4) 99.78%
+         ),
+         #f7f7f7;
+
+      .thesis_card_header {
+         color: #c0630f;
+
+         svg {
+            fill: rgba(192, 99, 15, 0.6) f;
+         }
+      }
+   }
+
+   &_after {
+      background:
+         linear-gradient(
+            90.26deg,
+            rgba(108, 186, 118, 0.4) 12.82%,
+            rgba(188, 236, 188, 0.4) 78.98%,
+            rgba(228, 255, 232, 0.4) 99.78%
+         ),
+         #f7f7f7;
+
+      .thesis_card_header {
+         color: #0f5919;
+
+         svg {
+            fill: rgba(15, 89, 25, 0.6);
+         }
+      }
+   }
+
+   &_original {
+      background:
+         linear-gradient(
+            91.03deg,
+            rgba(183, 183, 183, 0.4) 12.65%,
+            rgba(183, 183, 183, 0.08) 103.28%
+         ),
+         #f7f7f7;
+
+      .thesis_card_header {
+         color: getColorBlack(1);
+
+         svg {
+            fill: getColorBlack(0.7);
+         }
+      }
+
+      .thesis_card_content {
+         text-decoration: line-through;
+         opacity: 0.65;
+      }
+   }
+
+   &_current {
+      background:
+         linear-gradient(
+            90.26deg,
+            rgba(99, 183, 229, 0.4) 12.82%,
+            rgba(120, 197, 248, 0.4) 78.98%,
+            rgba(228, 245, 255, 0.4) 99.78%
+         ),
+         #f7f7f7;
+
+      .thesis_card_header {
+         color: #208DBB;
+
+         svg {
+            fill: #208DBB;
+         }
+      }
+   }
+}
+
+.left_arrow {
+   transform: rotate(-180deg);
+}

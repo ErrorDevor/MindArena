@@ -6,7 +6,7 @@
    overflow: hidden;
 
    border-radius: 1rem;
-   @include fontInterTight(1.5rem, 1, -0.02em, 500);
+   @include fontInterTight(1.4rem, 1, -0.01em, 500);
 
    &_content {
       position: relative;
@@ -38,7 +38,8 @@
          box-shadow: 0 0.5rem 1.5rem rgba(0, 66, 163, 0.4);
       }
 
-      &::before, &::after {
+      &::before,
+      &::after {
          content: "";
          position: absolute;
          width: 6.2rem;
@@ -60,7 +61,6 @@
          transform: rotate(-25deg);
       }
    }
-
 
    &--black {
       padding: 1.2rem 1.6rem;

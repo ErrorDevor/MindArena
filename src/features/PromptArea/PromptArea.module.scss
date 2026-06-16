@@ -1,0 +1,42 @@
+.prompt_area {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 1.25rem;
+   overflow: hidden;
+   border-bottom-left-radius: 1.6rem;
+   border-bottom-right-radius: 1.6rem;
+   background: #f6f6f6;
+   width: 100%;
+   height: 100%;
+   min-width: 0;
+   min-height: 0;
+   padding: 1rem;
+
+   &_bottom {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+
+      svg {
+         width: 0.6rem;
+         fill: rgba(0, 66, 163, 0.6);
+      }
+
+      a {
+         cursor: pointer;
+         @include fontInterTight(1.2rem, 1rem, -0.01em, 400, getColorBlack(0.5));
+
+         &:hover {
+            text-decoration: underline;
+         }
+      }
+   }
+}
+
+.dot {
+   @include box(0.3rem);
+   flex-shrink: 0;
+   border-radius: 50%;
+   background-color: getColorBlack(0.4);
+}

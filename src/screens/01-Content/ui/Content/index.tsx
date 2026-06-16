@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { contentArray } from "shared/data/data";
 import { Card } from "shared/ui/components/Card";
 import { Button } from "shared/ui/ui-kit/Button";
+import { Checkbox } from "shared/ui/ui-kit/Checkbox";
 
 import css from "./Content.module.scss";
 
@@ -18,6 +19,7 @@ interface Prop {
 
 export const Content: React.FC<Prop> = ({ className }) => {
    const [activeTab, setActiveTab] = React.useState(tabs[0]);
+   const [checkQuantum, setCheckQuantum] = React.useState(true);
 
    return (
       <div className={clsx(css.content, className)}>
@@ -39,6 +41,11 @@ export const Content: React.FC<Prop> = ({ className }) => {
                   </Button>
                ))}
             </div>
+
+            <label className={css.check_quantum}>
+               <Checkbox checked={checkQuantum} onChange={() => setCheckQuantum((prev) => !prev)} />
+               <p>Quantum</p>
+            </label>
          </div>
 
          <div className={css.content_list}>

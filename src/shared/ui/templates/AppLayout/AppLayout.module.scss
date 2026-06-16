@@ -2,7 +2,8 @@
    --header-height: 8.8rem;
    --sidebar-width: 24.4rem;
    --sidebar-collapsed-width: 8rem;
-
+   --comments-sidebar-width: 32rem;
+   --prompt-area-height: 9.4rem;
    width: 100%;
    height: 100vh;
    height: 100dvh;
@@ -16,10 +17,15 @@
    min-width: 0;
    min-height: 0;
    display: grid;
-   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+   grid-template-columns:
+      var(--sidebar-width)
+      minmax(0, 1fr)
+      var(--comments-sidebar-width);
+
    gap: 0.8rem;
    padding-bottom: 1rem;
    overflow: hidden;
+
    @include transition((grid-template-columns));
 
    > * {
@@ -29,8 +35,32 @@
    }
 }
 
+.center {
+   min-width: 0;
+   min-height: 0;
+   display: grid;
+   grid-template-rows: minmax(0, 1fr) var(--prompt-area-height);
+   gap: 0.4rem;
+   overflow: hidden;
+}
+
+.main_content {
+   min-width: 0;
+   min-height: 0;
+   overflow: hidden;
+}
+
+.prompt_area {
+   min-width: 0;
+   min-height: 0;
+   overflow: hidden;
+}
+
 .app_collapsed {
    .body {
-      grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
+      grid-template-columns:
+         var(--sidebar-collapsed-width)
+         minmax(0, 1fr)
+         var(--comments-sidebar-width);
    }
 }
