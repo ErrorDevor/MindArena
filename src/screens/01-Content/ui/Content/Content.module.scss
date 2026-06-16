@@ -64,9 +64,10 @@
    align-items: center;
    gap: 1.6rem;
    flex: 1 1 auto;
-   padding: 2.4rem 1.6rem;
+   padding: 0 1.6rem;
    width: 100%;
-
+   max-width: 90rem;
+   margin: 2.4rem auto;
    min-height: 0;
    overflow-y: auto;
    overflow-x: hidden;
@@ -80,12 +81,12 @@
    }
 
    &::-webkit-scrollbar-thumb {
-      background: #ededed;
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 0.4rem;
    }
 
    &::-webkit-scrollbar-thumb:hover {
-      background: rgba(237, 237, 237, 0.4);
+      background: rgba(0, 0, 0, 0.2);
    }
 }
 
@@ -95,7 +96,7 @@
    align-items: center;
    gap: 0.4rem;
    cursor: pointer;
-   
+
    p {
       @include fontInterTight(1.4rem, 1, -0.01em, 500, getColorBlack(1));
    }

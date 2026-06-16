@@ -49,12 +49,12 @@
       }
 
       &::-webkit-scrollbar-thumb {
-         background: #ededed;
+         background: rgba(0, 0, 0, 0.1);
          border-radius: 0.4rem;
       }
 
       &::-webkit-scrollbar-thumb:hover {
-         background: rgba(237, 237, 237, 0.4);
+         background: rgba(0, 0, 0, 0.2);
       }
    }
 
