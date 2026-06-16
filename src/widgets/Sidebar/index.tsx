@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { sidebarData } from "shared/data/data";
 import Accordion from "shared/ui/base/Accordion";
 import Image from "shared/ui/base/Image";
+import { Search } from "shared/ui/components/Search";
 import { DropdownArrowIcon } from "shared/ui/icons";
 import { LiveLabel } from "shared/ui/ui-kit/LiveLabel";
 import { Tag } from "shared/ui/ui-kit/Tag";
@@ -21,9 +22,7 @@ interface Props {
 }
 
 export const Sidebar: React.FC<Props> = ({ className, collapsed, onToggleCollapsed }) => {
-   const [activeTopicId, setActiveTopicId] = React.useState(
-   sidebarData.topics[0]?.id
-);
+   const [activeTopicId, setActiveTopicId] = React.useState(sidebarData.topics[0]?.id);
 
    return (
       <aside className={clsx(css.sidebar, className)}>
@@ -54,16 +53,20 @@ export const Sidebar: React.FC<Props> = ({ className, collapsed, onToggleCollaps
                      <Accordion.Content>
                         <div className={css.nav_content}>
                            {sidebarData.topics.map((item, index) => (
-   <Topic
-      key={item.id}
-      index={index}
-      topic={item.topic}
-      count={item.count}
-      active={activeTopicId === item.id}
-      onClick={() => setActiveTopicId(item.id)}
-   />
-))}
+                              <Topic
+                                 key={item.id}
+                                 index={index}
+                                 topic={item.topic}
+                                 count={item.count}
+                                 active={activeTopicId === item.id}
+                                 onClick={() => setActiveTopicId(item.id)}
+                              />
+                           ))}
                         </div>
+
+                        <button className={css.view_all_button}>
+                           View All <DropdownArrowIcon />
+                        </button>
                      </Accordion.Content>
                   </>
                )}
@@ -138,9 +141,13 @@ export const Sidebar: React.FC<Props> = ({ className, collapsed, onToggleCollaps
 
                      <Accordion.Content>
                         <div className={css.nav_content}>
+                           <Search placeholder="Search tags..." withInfo={false} />
                            {sidebarData.tags.map((item) => (
                               <Tag key={item.id} tag={item.tag} />
                            ))}
+                           <button className={css.view_all_button}>
+                              View All <DropdownArrowIcon />
+                           </button>
                         </div>
                      </Accordion.Content>
                   </>

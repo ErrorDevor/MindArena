@@ -1,0 +1,193 @@
+.input_panel {
+   position: relative;
+   width: 100%;
+   max-width: 90.4rem;
+   min-height: 5.2rem;
+   max-height: 5.2rem;
+   padding: 0.4rem;
+   border-radius: 1.6rem;
+   background: linear-gradient(0deg, getColorAccent(0.2), getColorAccent(0.2)), getColorWhite(0.1);
+   border: 0.1rem solid getColorAccent(0.2);
+   box-shadow: 0 0.6rem 3rem getColorAccent(0.15);
+   backdrop-filter: blur(5px);
+   overflow: hidden;
+
+   &_inner {
+      position: relative;
+      @include box(100%);
+      display: flex;
+    //   justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0.2rem 1rem 1.6rem;
+      border-radius: 1.2rem;
+      gap: 1.2rem;
+      background: getColorWhite(0.8);
+      z-index: 2;
+      box-shadow:
+         0 0.2rem 0.6rem 0.1rem getColorAccent(0.1),
+         inset 0 0 2rem getColorWhite(0.25);
+      @include strokeGradient(
+         linear-gradient(getColorWhite(1), getColorWhite(1)),
+         linear-gradient(152deg, getColorWhite(1) 0%, getColorAccent(1) 40%, getColorWhite(1) 79%),
+         0.1rem
+      );
+   }
+
+   &_textarea {
+      width: 100%;
+      height: 2.4rem;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      @include fontInterTight(1.4rem, 2.4rem, -0.01em, 400, getColorBlack(1));
+   }
+}
+
+.send_button {
+   position: relative;
+   @include flexCenter();
+   @include box(3.6rem);
+   flex-shrink: 0;
+   margin-left: auto;
+   background: #0042a3;
+   border: 0.1rem solid;
+   border-color: getColorWhite(0.1);
+   box-shadow: 0 0.5rem 1.5rem rgba(0, 66, 163, 0.2);
+   border-radius: 1rem;
+   overflow: hidden;
+   @include transition((box-shadow, border-color));
+
+   &:hover {
+      border-color: getColorWhite(0.4);
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 66, 163, 0.4);
+
+      svg {
+         transform: scale(1.1);
+      }
+   }
+
+   svg {
+      width: 2rem;
+      fill: getColorWhite(1);
+      @include transition((transform));
+   }
+
+   .star,
+   .stars {
+      position: absolute;
+      pointer-events: none;
+   }
+
+   .star {
+      left: -0.4rem;
+      bottom: 0.4rem;
+   }
+   .stars {
+      right: 0;
+      top: 0.3rem;
+   }
+
+   &::before,
+   &::after {
+      content: "";
+      position: absolute;
+      width: 4rem;
+      height: 1.2rem;
+      border-radius: 50%;
+      background-color: #86bcff;
+      filter: blur(9px);
+      z-index: 1;
+   }
+
+   &::before {
+      left: -0.8rem;
+      top: -0.6rem;
+      transform: rotate(-35deg);
+   }
+
+   &::after {
+      bottom: -1rem;
+      right: -0.4rem;
+      transform: rotate(-25deg);
+   }
+}
+
+.gradient {
+   position: absolute;
+   inset: 0;
+   overflow: hidden;
+   z-index: 0;
+   pointer-events: none;
+
+   span {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(
+         ellipse at 30% 50%,
+         rgba(3, 85, 205, 0.85) 0%,
+         rgba(3, 85, 205, 0.45) 35%,
+         rgba(3, 85, 205, 0) 75%
+      );
+      filter: blur(1rem);
+      transform-origin: center;
+      will-change: transform;
+   }
+}
+
+.gradient_orb_1 {
+   width: 19.2rem;
+   height: 4.5rem;
+   left: -2.5rem;
+   top: -2.3rem;
+   animation: orbFloat1 8s ease-in-out infinite;
+}
+
+.gradient_orb_2 {
+   width: 12rem;
+   height: 5rem;
+   right: -3rem;
+   top: -1rem;
+   animation: orbFloat2 10s ease-in-out infinite;
+}
+
+.gradient_orb_3 {
+   width: 20rem;
+   height: 4rem;
+   left: 45%;
+   bottom: -2rem;
+   animation: orbFloat3 12s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+   0%,
+   100% {
+      transform: translate(0, 0) rotate(-23deg);
+   }
+
+   50% {
+      transform: translate(1.2rem, 0.6rem) rotate(25deg);
+   }
+}
+
+@keyframes orbFloat2 {
+   0%,
+   100% {
+      transform: translate(0, 0) rotate(35deg);
+   }
+
+   50% {
+      transform: translate(-1.4rem, 0.8rem) rotate(-20deg);
+   }
+}
+
+@keyframes orbFloat3 {
+   0%,
+   100% {
+      transform: translate(0, 0) rotate(-70deg);
+   }
+
+   50% {
+      transform: translate(0.8rem, -0.7rem) rotate(15deg);
+   }
+}

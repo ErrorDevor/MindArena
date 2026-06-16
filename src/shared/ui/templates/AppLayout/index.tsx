@@ -1,6 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
+
 import clsx from "clsx";
 
 import css from "./AppLayout.module.scss";
@@ -9,12 +10,25 @@ interface Props {
    children: React.ReactNode;
    header?: React.ReactNode;
    sidebar?: React.ReactNode;
+   commentsSidebar?: React.ReactNode;
+   promptArea?: React.ReactNode;
    isSidebarCollapsed?: boolean;
    className?: string;
 }
 
 export const AppLayout = forwardRef<HTMLDivElement, Props>(
-   ({ className, header, sidebar, children, isSidebarCollapsed = false }, ref) => {
+   (
+      {
+         className,
+         header,
+         sidebar,
+         commentsSidebar,
+         promptArea,
+         children,
+         isSidebarCollapsed = false,
+      },
+      ref
+   ) => {
       return (
          <div
             ref={ref}
@@ -24,7 +38,14 @@ export const AppLayout = forwardRef<HTMLDivElement, Props>(
 
             <div className={css.body}>
                {sidebar}
-               {children}
+
+               <div className={css.center}>
+                  <div className={css.main_content}>{children}</div>
+
+                  {promptArea && <div className={css.prompt_area}>{promptArea}</div>}
+               </div>
+
+               {commentsSidebar}
             </div>
          </div>
       );

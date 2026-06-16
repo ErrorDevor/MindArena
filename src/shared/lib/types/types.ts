@@ -16,5 +16,26 @@ export type CardType = {
    tier?: {
       status: true;
       name: string;
-   }
+   };
+};
+
+export type CommentsType = {
+   id: string;
+   comment: string;
+   user: UserData;
+};
+
+export type UserData = {
+   id: string;
+   userName: string;
+   userPhoto?: string;
+   expert?: boolean;
+   inquiries?: number;
+   role: string;
+};
+
+export type AI = {
+   id: string;
+   name: string;
+   icon: string;
 };
