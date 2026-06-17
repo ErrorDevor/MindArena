@@ -8,10 +8,10 @@ import { aiModels } from "shared/data/data";
 import { CardType } from "shared/lib/types/types";
 import Image from "shared/ui/base/Image";
 import { ClockIcon, ExchangeIcon, MessageIcon } from "shared/ui/icons";
-import { AccountButton } from "shared/ui/ui-kit/AccountButton";
+// import { AccountButton } from "shared/ui/ui-kit/AccountButton";
 import { LiveIcon } from "shared/ui/ui-kit/LiveIcon";
 import { topicColors } from "shared/utils/helpers/useTopicColor";
-
+import { UserInfo } from "shared/ui/components/UserInfo";
 import { AiStack } from "../AiStack";
 import { SegmentProgress } from "../SegmentProgress";
 import { ThesisCard } from "../ThesisCard";
@@ -33,10 +33,8 @@ export const Card: React.FC<Prop> = ({ className, data }) => {
       <div className={clsx(css.card, className)}>
          <div className={css.card_header}>
             <div className={css.card_top}>
-               <div className={css.card_user_block}>
-                  <AccountButton avatar={<Image.Default src={data.user.avatar} />} />
-                  <a>{data.user.name}</a>
-               </div>
+               <UserInfo userName={data.user.name} userAvatar={data.user.avatar}/>
+               
 
                <div className={css.divider} />
 

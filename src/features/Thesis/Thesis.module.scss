@@ -1,0 +1,152 @@
+.thesis {
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+
+   &_blocks {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+      padding: 2rem 1.6rem;
+      border-bottom: 0.1rem solid rgba(0, 0, 0, 0.1);
+
+      h5 {
+         display: flex;
+         align-items: center;
+         text-transform: uppercase;
+         @include fontInterTight(1.2rem, 1, 0, 500, getColorBlack(0.5));
+      }
+
+      &_content {
+         display: flex;
+         flex-direction: column;
+         gap: 1.2rem;
+
+         p {
+            @include fontInterTight(1.2rem, 1, 0, 400, getColorBlack(1));
+         }
+      }
+   }
+}
+
+.last_thesis_blocks {
+   border-bottom: unset;
+}
+
+.dot {
+   @include box(0.4rem);
+   flex-shrink: 0;
+   border-radius: 50%;
+   background-color: getColorBlack(0.5);
+   margin: 0 0.4rem;
+}
+
+.attacks_list_item {
+   display: flex;
+   gap: 0.8rem;
+
+   p {
+      text-decoration: line-through;
+      @include fontInterTight(1.2rem, 1, 0, 500, getColorBlack(0.5));
+   }
+}
+
+.close_list_item {
+   p {
+      text-decoration: none;
+      @include fontInterTight(1.2rem, 1, 0, 500, getColorBlack(1));
+   }
+}
+
+.pedth_buttons_nav {
+   display: flex;
+   gap: 0.4rem;
+}
+
+.cost_image_block {
+   position: relative;
+}
+
+.image_cost_total {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   display: flex;
+   align-items: center;
+   flex-direction: column;
+   gap: 0.4rem;
+
+   p {
+      @include fontInterTight(1.2rem, 1, -0.01em, 400, getColorBlack(0.6));
+   }
+
+   h6 {
+      @include fontInterTight(1.2rem, 1, -0.01em, 600, getColorBlack(1));
+   }
+}
+
+.cost_info {
+   flex: 1;
+}
+
+.cost_list {
+   padding-bottom: 1.2rem;
+   border-bottom: 0.1rem dashed rgba(0, 0, 0, 0.2);
+}
+
+.cost_item {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+
+   &:not(:last-child) {
+      margin-bottom: 1.2rem;
+   }
+}
+
+.cost_name {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+
+   span:last-child {
+      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(1));
+   }
+}
+
+.cost_dot {
+   @include box(1rem);
+   border-radius: 50%;
+   flex-shrink: 0;
+   position: relative;
+   overflow: hidden;
+
+   &::after {
+      content: "";
+      position: absolute;
+      top: 15%;
+      left: 20%;
+      width: 35%;
+      height: 35%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      filter: blur(0.1rem);
+   }
+}
+
+.cost_value {
+   @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.6));
+}
+
+.cost_total {
+   margin-top: 1.2rem;
+
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+
+   p {
+      @include fontInterTight(1.2rem, 1, -0.01em, 600, getColorBlack(1));
+   }
+}

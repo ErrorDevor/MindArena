@@ -45,7 +45,7 @@
          width: 6.2rem;
          height: 2rem;
          border-radius: 50%;
-         background-color: #86bcff;
+         background-color: #86BCFF;
          filter: blur(15px);
       }
 
@@ -150,8 +150,8 @@
    &_star {
       position: absolute;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.85);
-      filter: blur(0.05rem);
+      background: getColorWhite(0.5);
+      filter: blur(0.04rem);
       animation: starFloat 6s ease-in-out infinite;
       animation-delay: var(--delay);
    }
@@ -232,8 +232,8 @@
 .button_star:nth-child(8) {
    top: 22%;
    left: 74%;
-   width: 0.24rem;
-   height: 0.24rem;
+   width: 0.14rem;
+   height: 0.14rem;
 }
 
 .button_star:nth-child(9) {
@@ -246,8 +246,8 @@
 .button_star:nth-child(10) {
    top: 82%;
    left: 38%;
-   width: 0.24rem;
-   height: 0.24rem;
+   width: 0.14rem;
+   height: 0.14rem;
 }
 
 .button_star:nth-child(11) {

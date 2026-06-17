@@ -23,7 +23,6 @@
       var(--comments-sidebar-width);
 
    gap: 0.8rem;
-   // padding-bottom: 1rem;
    overflow: hidden;
 
    @include transition((grid-template-columns));
@@ -44,6 +43,11 @@
    overflow: hidden;
 }
 
+.debate_center {
+   gap: 0;
+   // background-color: #F6F6F6;
+}
+
 .main_content {
    min-width: 0;
    min-height: 0;
@@ -62,5 +66,21 @@
          var(--sidebar-collapsed-width)
          minmax(0, 1fr)
          var(--comments-sidebar-width);
+   }
+}
+
+.app_without_comments {
+   .body {
+      grid-template-columns:
+         var(--sidebar-width)
+         minmax(0, 1fr);
+   }
+}
+
+.app_collapsed.app_without_comments {
+   .body {
+      grid-template-columns:
+         var(--sidebar-collapsed-width)
+         minmax(0, 1fr);
    }
 }
