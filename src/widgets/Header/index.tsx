@@ -7,6 +7,7 @@ import clsx from "clsx";
 import Image from "shared/ui/base/Image";
 import { NextLink } from "shared/ui/base/NextLink";
 import { Search } from "shared/ui/components/Search";
+import { UserInfo } from "shared/ui/components/UserInfo";
 import {
    FeedIcon,
    NotifyIcon,
@@ -53,11 +54,13 @@ export const Header: React.FC = () => {
          <div className={css.header_right_side}>
             <div className={css.header_main_buttons}>
                <Button variant="blue" className={css.button_build}>
-                  <WrenchIcon /> Build Room
-               </Button>
-               <Button variant="black" className={css.button_inquiry}>
                   <PlusIcon />
                   Inquiry
+               </Button>
+               <Button variant="black" className={css.button_inquiry}>
+                  
+
+                  <WrenchIcon /> Build Room
                </Button>
             </div>
 
@@ -66,7 +69,7 @@ export const Header: React.FC = () => {
             <div className={css.header_account_block}>
                <NotifyButton icon={<NotifyIcon />} count={2} />
 
-               <AccountButton avatar={<Image.Default src="/images/avatar.png" />} />
+               <UserInfo userName="@truthseeker" userAvatar="/images/avatar.png" withName={false} />
             </div>
          </div>
       </header>

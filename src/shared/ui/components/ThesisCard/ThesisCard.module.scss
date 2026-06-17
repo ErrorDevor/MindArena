@@ -17,6 +17,11 @@
       }
    }
 
+   &_header_simple {
+      justify-content: flex-start;
+      padding-inline: 1rem;
+   }
+
    &_content {
       display: flex;
       justify-content: center;
@@ -25,7 +30,7 @@
       padding: 1.2rem 1.4rem;
       border-radius: 1rem;
       background: getColorWhite(1);
-      @include fontInterTight(1.4rem, 1.8, -0.01em, 400, getColorBlack(1));
+      @include fontInterTight(1.4rem, 1, -0.01em, 400, getColorBlack(1));
       text-align: center;
    }
 
@@ -112,4 +117,9 @@
 
 .left_arrow {
    transform: rotate(-180deg);
+}
+
+.thesis_simple_content {
+   font-size: 1.2rem;
+   text-align: start;
 }

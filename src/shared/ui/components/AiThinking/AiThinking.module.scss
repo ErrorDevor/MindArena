@@ -1,0 +1,44 @@
+.ai_thinking {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.8rem;
+
+  &_anim {
+    width: 4.4rem;
+  }
+
+  &_span {
+    @include fontInterTight(1.4rem, 1, -0.01em, 500, getColorBlack(1));
+    mask: linear-gradient(to right, #0355CD, getColorBlack(1));
+
+    i {
+      font: inherit;
+      animation: dotSparking 1.05s linear infinite;
+
+      &:nth-child(2) {
+        animation-delay: 0.35s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.7s;
+      }
+    }
+  }
+}
+
+@keyframes dotSparking {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@include screenMD {
+  .collection {
+    margin-left: 1rem;
+  }
+}

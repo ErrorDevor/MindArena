@@ -1,0 +1,248 @@
+.content {
+   width: 100%;
+   height: 100%;
+   min-height: 0;
+   display: grid;
+   grid-template-columns:
+      minmax(0, 1fr)
+      24.4rem
+      24.4rem;
+   overflow: hidden;
+   border-top-left-radius: 1.6rem;
+   border-top-right-radius: 1.6rem;
+   background: #f6f6f6;
+   @include transition((width, min-width));
+
+   &_wrapper {
+      padding: 2.5rem 4.4rem 0.4rem 4.4rem;
+      min-height: 0;
+      height: 100%;
+   }
+}
+
+.main_block,
+.thesis_block,
+.comments_block {
+   min-width: 0;
+   min-height: 0;
+   height: 100%;
+   overflow-y: auto;
+   overflow-x: hidden;
+
+   &::-webkit-scrollbar {
+      width: 0.4rem;
+   }
+
+   &::-webkit-scrollbar-track {
+      background: transparent;
+   }
+
+   &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 0.4rem;
+   }
+
+   &::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+   }
+}
+
+.main_block {
+   // padding: 2.5rem 4.4rem;
+   padding-right: 2rem;
+
+   &_top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+   }
+}
+
+.thesis_block {
+   max-width: 24.4rem;
+
+   border-left: 0.1rem solid rgba(0, 0, 0, 0.08);
+   background-color: getColorWhite(0.8);
+}
+
+.comments_block {
+   max-width: 24.4rem;
+
+   border-left: 0.1rem solid rgba(0, 0, 0, 0.08);
+   background-color: getColorWhite(0.8);
+}
+
+/*User Info*/
+.top_info {
+   display: flex;
+   align-items: center;
+   gap: 1.2rem;
+}
+
+.user_date {
+   @include fontInterTight(1.4rem, 1.6, -0.01em, 500, getColorBlack(0.5));
+}
+
+.dot {
+   @include box(0.4rem);
+   flex-shrink: 0;
+   border-radius: 50%;
+   background-color: getColorBlack(0.5);
+   margin: 0 0.4rem;
+}
+
+.share_button {
+   @include flexCenter();
+   gap: 0.8rem;
+   width: fit-content;
+   height: 3.6rem;
+   background: linear-gradient(178.65deg, getColorWhite(1) 7.92%, #f7f7f7 98.85%);
+   border: 0.1rem solid rgba(0, 0, 0, 0.1);
+   border-radius: 0.8rem;
+   padding: 0 1.6rem;
+   @include fontInterTight(1.6rem, 1.6, -0.01em, 500, getColorBlack(1));
+   svg {
+      width: 1.3rem;
+      fill: getColorBlack(1);
+   }
+
+   @include transition((box-shadow));
+
+   &:hover {
+      box-shadow:
+         0 0.5rem 1.5rem rgba(9, 12, 10, 0.1),
+         inset 0 0.6rem 2rem rgba(255, 255, 255, 0.1);
+   }
+}
+
+/*Title*/
+.title {
+   margin-top: 3.2rem;
+   @include fontInterTight(2.4rem, 1, -0.01em, 500, getColorBlack(1));
+}
+
+/*Tags List*/
+.tags_list {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 0.8rem;
+   margin-top: 1.75rem;
+}
+
+.tags {
+   @include flexCenter();
+   gap: 0.4rem;
+   border-radius: 10rem;
+   border: 0.1rem solid rgba(0, 0, 0, 0.1);
+   padding: 0.8rem 1.2rem;
+   cursor: pointer;
+   @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(1));
+
+   &_color_block {
+      flex-shrink: 0;
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 0.2rem;
+   }
+}
+
+.tags_debate {
+   padding: 0;
+   p {
+      font-size: 1.2rem;
+      color: getColorBlack(1);
+   }
+}
+
+/*Nav*/
+.buttons_nav {
+   position: relative;
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+   margin-top: 3.2rem;
+   padding-bottom: 1.6rem;
+   border-bottom: 0.1rem solid rgba(0, 0, 0, 0.1);
+}
+
+.button_nav {
+   position: relative;
+   height: 3.6rem;
+   overflow: visible !important;
+
+   &_active {
+      &::after {
+         content: "";
+         position: absolute;
+         left: 0;
+         bottom: -1.9rem;
+         width: 100%;
+         height: 0.3rem;
+         background: getColorBlack(1);
+         border-radius: 10rem;
+         box-shadow: 0 2px 4px rgba(9, 12, 10, 0.25);
+      }
+   }
+}
+
+/*Main*/
+.main_list {
+   display: flex;
+   flex-direction: column;
+   gap: 1.6rem;
+   padding: 3.2rem 0;
+
+   &_raunds,
+   &_ai_cards,
+   &_card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+      width: 100%;
+   }
+
+   &_ai_cards {
+      gap: 1.2rem;
+   }
+
+   &_card {
+      gap: 0.6rem;
+   }
+}
+
+.status_label {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+   width: 100%;
+
+   &_item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+
+      p {
+         flex-wrap: nowrap;
+         @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
+      }
+
+      svg {
+         width: 1.4rem;
+         stroke: getColorBlack(0.5);
+      }
+   }
+
+   &_progress {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
+
+      span {
+         color: getColorBlack(1);
+      }
+   }
+}

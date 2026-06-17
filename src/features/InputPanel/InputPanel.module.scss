@@ -10,13 +10,13 @@
    border: 0.1rem solid getColorAccent(0.2);
    box-shadow: 0 0.6rem 3rem getColorAccent(0.15);
    backdrop-filter: blur(5px);
-   overflow: hidden;
+   // overflow: hidden;
 
    &_inner {
       position: relative;
       @include box(100%);
       display: flex;
-    //   justify-content: space-between;
+      //   justify-content: space-between;
       align-items: center;
       padding: 1rem 0.2rem 1rem 1.6rem;
       border-radius: 1.2rem;
@@ -44,12 +44,22 @@
    }
 }
 
+.button_block {
+   display: flex;
+   align-items: center;
+   margin-left: auto;
+   gap: 0.8rem;
+   p {
+      @include fontInterTight(1.2rem, 1, -0.01em, 400, getColorBlack(0.5));
+   }
+}
+
 .send_button {
    position: relative;
    @include flexCenter();
    @include box(3.6rem);
    flex-shrink: 0;
-   margin-left: auto;
+
    background: #0042a3;
    border: 0.1rem solid;
    border-color: getColorWhite(0.1);
@@ -113,13 +123,32 @@
    }
 }
 
+.send_token_button {
+   padding: 1.6rem;
+   height: 3.6rem;
+
+   svg {
+      width: 1.6rem;
+      fill: getColorWhite(1);
+   }
+}
+
+.post_button {
+   height: 3.6rem;
+   svg {
+      width: 1.6rem;
+      fill: getColorWhite(1);
+   }
+}
+
+
 .gradient {
    position: absolute;
    inset: 0;
    overflow: hidden;
    z-index: 0;
    pointer-events: none;
-
+   border-radius: 1.6rem;
    span {
       position: absolute;
       border-radius: 50%;

@@ -1,0 +1,29 @@
+.tooltip {
+   position: absolute;
+   z-index: 9999;
+
+   width: 24.5rem;
+   padding: 1.6rem;
+
+   border-radius: 1.6rem;
+   background: rgba(16, 26, 41, 0.7);
+   border: 0.1rem solid rgba(255, 255, 255, 0.08);
+   backdrop-filter: blur(50px);
+
+   text-align: center;
+   pointer-events: none;
+
+   opacity: 0;
+   visibility: hidden;
+
+   transform: translate(-50%, calc(-100% - 0.8rem));
+
+   @include fontInterTight(1.4rem, 1.4, 0, 500, #fff4f4);
+   @include transition((opacity, transform, visibility));
+}
+
+.tooltip_visible {
+   opacity: 1;
+   visibility: visible;
+   transform: translate(-50%, calc(-100% - 1.2rem));
+}

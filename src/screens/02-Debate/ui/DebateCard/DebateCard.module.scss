@@ -1,0 +1,162 @@
+.card {
+   overflow: hidden;
+   border: 0.1rem solid;
+   border-radius: 1.6rem;
+   width: 100%;
+}
+
+.header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 1.2rem 1.6rem;
+   border-bottom: 0.1rem solid currentColor;
+   background-color: #F9F9F9;
+}
+
+.ai {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+}
+
+.avatar {
+   @include box(2.4rem);
+   flex-shrink: 0;
+   border-radius: 0.6rem;
+}
+
+.name {
+   @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(1));
+}
+
+.founder {
+   margin-left: -0.5rem;
+   @include fontInterTight(1.2rem, 1.2, -0.01em, 500, getColorBlack(0.5));
+
+   span {
+      color: getColorBlack(1);
+   }
+}
+
+.dot {
+   @include box(0.3rem);
+   flex-shrink: 0;
+   border-radius: 50%;
+   background-color: getColorBlack(0.5);
+   margin: 0 0.4rem;
+}
+
+.messages {
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   font-size: 13px;
+   color: #777;
+
+   svg {
+      width: 1.6rem;
+      stroke: getColorBlack(0.5);
+   }
+}
+
+.round {
+   @include flexCenter();
+   width: fit-content;
+   height: 1.7rem;
+   padding: 0 1rem;
+   border-radius: 10rem;
+   background: #f2f2f2;
+   @include fontInterTight(1.2rem, 1, 0, 500, getColorBlack(0.5));
+}
+
+.body {
+   padding: 1.4rem 1.6rem;
+}
+
+.text {
+   @include fontInterTight(1.2rem, 1.2, 0, 500, rgba(0, 0, 0, 0.9));
+
+   max-height: 2.6rem;
+   overflow: hidden;
+   @include transition((max-height));
+}
+
+.text_expanded {
+   max-height: 20rem;
+}
+
+.read_more {
+   margin-top: 1.6rem;
+   display: flex;
+   align-items: center;
+   gap: 0.4rem;
+   padding: 0;
+   border: none;
+   background: transparent;
+   @include fontInterTight(1.2rem, 1.2, 0, 500, rgba(0, 0, 0, 0.9));
+   cursor: pointer;
+
+   svg {
+      width: 1.4rem;
+      margin-bottom: 0.1rem;
+      stroke: rgba(0, 0, 0, 0.9);
+      transform: rotate(-90deg);
+      @include transition((transform));
+   }
+}
+
+.read_more_active {
+   svg {
+      transform: rotate(90deg);
+   }
+}
+
+.status {
+   margin-top: 1.6rem;
+   @include flexCenter();
+   padding: 0 1.6rem;
+   gap: 2rem;
+   width: fit-content;
+   height: 2.5rem;
+   background: #f9f9f9;
+   border: 0.1rem solid getColorWhite(1);
+   box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.04);
+   border-radius: 1.8rem;
+   @include fontInterTight(1.2rem, 1, 0, 500, getColorBlack(0.5));
+}
+
+.red {
+   color: rgba(200, 23, 52, 0.4);
+   background: rgba(200, 23, 52, 0.05);
+}
+
+.blue {
+   color: rgba(9, 73, 168, 0.4);
+   background: rgba(9, 73, 168, 0.05);
+}
+
+.purple {
+   color: rgba(109, 82, 213, 0.4);
+   background: rgba(109, 82, 213, 0.05);
+}
+
+.orange {
+   color: rgba(242, 132, 33, 0.05);
+   background: rgba(242, 132, 33, 0.05);
+}
+
+.green {
+   color: #8bd7aa;
+   background: #f3fff7;
+}
+
+.pink {
+   color: #e5a3ef;
+   background: #fff4ff;
+}
+
+.cyan {
+   color: #8fdce4;
+   background: #f1fdff;
+}

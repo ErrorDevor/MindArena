@@ -1,0 +1,49 @@
+.debate_area {
+   display: flex;
+   flex-direction: column;
+   gap: 1.25rem;
+   overflow: hidden;
+   border-bottom-left-radius: 1.6rem;
+   border-bottom-right-radius: 1.6rem;
+   background: #f6f6f6;
+   width: 100%;
+   height: 100%;
+   min-width: 0;
+   min-height: 0;
+   padding: 0.6rem 4.4rem 0;
+
+   &_bottom {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      width: 100%;
+      max-width: 70rem;
+      @include fontInterTight(1.2rem, 1rem, -0.01em, 400, getColorBlack(0.5));
+   }
+}
+
+.debate_input {
+   max-width: 70rem;
+}
+
+.dot {
+   @include box(0.3rem);
+   flex-shrink: 0;
+   border-radius: 50%;
+   background-color: getColorBlack(0.4);
+}
+
+.eq {
+   margin: 0 0.8rem;
+}
+
+.tokens_count {
+   margin-left: auto;
+   display: flex;
+   align-items: center;
+   gap: 0.4rem;
+
+   p {
+      @include fontInterTight(1.2rem, 1rem, -0.01em, 400, getColorBlack(1));
+   }
+}

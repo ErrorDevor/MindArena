@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
 
    const isBlack = variant === "black";
 
-   const stars = Array.from({ length: 18 });
+   const stars = Array.from({ length: 10 });
 
    const content = (
       <>

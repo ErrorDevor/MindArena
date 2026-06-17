@@ -2,12 +2,11 @@
 
 import React from "react";
 
-import { Content } from "screens/01-Content/ui/Content";
+import { DebateScreen } from "screens/02-Debate/ui/Content";
 
 import { Header } from "widgets/Header";
 import { Sidebar } from "widgets/Sidebar";
-
-// import { CommentsSidebar } from "features/CommentsSidebar";
+import { DebateArea } from "features/DebateArea";
 import { PromptArea } from "features/PromptArea";
 
 import { AppLayout } from "shared/ui/templates/AppLayout";
@@ -27,11 +26,10 @@ export default function Home() {
                onToggleCollapsed={() => setCollapsed((prev) => !prev)}
             />
          }
-         // commentsSidebar={<CommentsSidebar />}
-         promptArea={<PromptArea />}
+         promptArea={<DebateArea />}
          isComments={false}
       >
-         <Content />
+         <DebateScreen />
       </AppLayout>
    );
 }

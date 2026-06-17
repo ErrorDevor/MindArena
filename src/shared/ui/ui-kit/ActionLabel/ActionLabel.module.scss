@@ -1,0 +1,38 @@
+.label {
+   @include flexCenter();
+   width: fit-content;
+   height: 1.9rem;
+   padding: 0 1rem;
+   border-radius: 10rem;
+   @include fontInterTight(1rem, 1, -0.01em, 500, getColorWhite(1));
+
+   text-transform: uppercase;
+}
+
+.attack {
+   background: #C81734;
+}
+
+.improve {
+   background: #0949A8;
+}
+
+.human {
+   background: #6D52D5;
+}
+
+.research-gap {
+   background: #F28421;
+}
+
+.convergent {
+   background: #87DAFF;
+}
+
+.quantum {
+   background: #0355CD;
+}
+
+.divergent {
+   background: #d03fe6;
+}

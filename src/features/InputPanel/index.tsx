@@ -6,25 +6,54 @@ import clsx from "clsx";
 
 import { aiModels } from "shared/data/data";
 import { AiStack } from "shared/ui/components/AiStack";
-import { SendIcon } from "shared/ui/icons";
+import { Tooltip } from "shared/ui/components/Tooltip";
+import { SendIcon, TokenIcon } from "shared/ui/icons";
+import { Button } from "shared/ui/ui-kit/Button";
 
 import css from "./InputPanel.module.scss";
 
 interface Prop {
    className?: string;
+   variant?: "main" | "debate";
 }
 
-export const InputPanel: React.FC<Prop> = ({ className }) => {
+export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
+   const placeholder =
+      variant !== "main"
+         ? "Write your opinion, fact or example..."
+         : "Write a thesis or open question — mode detected automatically….";
    return (
       <div className={clsx(css.input_panel, className)}>
          <div className={css.input_panel_inner}>
             <AiStack items={[aiModels[0], aiModels[1], aiModels[2], aiModels[3]]} />
-            
-            <textarea
-               placeholder="Write a thesis or open question — mode detected automatically…."
-               className={css.input_panel_textarea}
-            />
 
+            <textarea placeholder={placeholder} className={css.input_panel_textarea} />
+
+            <div className={css.button_block}>
+               <ButtonSend variant={variant} />
+            </div>
+         </div>
+
+         <div className={css.gradient}>
+            <span className={css.gradient_orb_1} />
+            <span className={css.gradient_orb_2} />
+            <span className={css.gradient_orb_3} />
+         </div>
+      </div>
+   );
+};
+
+interface ButtonSendProp {
+   variant?: "main" | "debate";
+}
+
+const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main" }) => {
+   const sendTokenRef = React.useRef<HTMLDivElement | null>(null);
+   const [isTooltipOpen, setIsTooltipOpen] = React.useState(false);
+
+   return (
+      <>
+         {variant === "main" ? (
             <button className={css.send_button}>
                <SendIcon />
 
@@ -60,13 +89,33 @@ export const InputPanel: React.FC<Prop> = ({ className }) => {
                   />
                </svg>
             </button>
-         </div>
+         ) : (
+            <div className={css.button_block}>
+               <Button variant="black" className={css.post_button}>
+                  <SendIcon />
+                  Post
+               </Button>
 
-         <div className={css.gradient}>
-            <span className={css.gradient_orb_1} />
-            <span className={css.gradient_orb_2} />
-            <span className={css.gradient_orb_3} />
-         </div>
-      </div>
+               <p>or</p>
+
+               <div
+                  ref={sendTokenRef}
+                  onMouseEnter={() => setIsTooltipOpen(true)}
+                  onMouseLeave={() => setIsTooltipOpen(false)}
+               >
+                  <Button variant="blue" className={css.send_token_button}>
+                     Send - 5
+                     <TokenIcon />
+                  </Button>
+               </div>
+
+               <Tooltip
+                  anchorRef={sendTokenRef}
+                  isOpen={isTooltipOpen}
+                  text="Your argument will enter the next round. AI will respond to it directly."
+               />
+            </div>
+         )}
+      </>
    );
 };
