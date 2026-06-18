@@ -1,8 +1,12 @@
 import React from "react";
+
 import clsx from "clsx";
+
 import Image from "shared/ui/base/Image";
 import { UserInfo } from "shared/ui/components/UserInfo";
 import { DropdownArrowIcon, MessageIcon } from "shared/ui/icons";
+import { ActionLabelType } from "shared/ui/ui-kit/ActionLabel";
+import { ActionLabel } from "shared/ui/ui-kit/ActionLabel";
 
 import css from "./DebateCard.module.scss";
 
@@ -18,6 +22,7 @@ interface DebateCardProps {
    text: string;
    status?: React.ReactNode;
    variant?: DebateCardVariant;
+   action: ActionLabelType;
    className?: string;
 }
 
@@ -31,6 +36,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
    text,
    status,
    variant = "red",
+   action,
    className,
 }) => {
    const textRef = React.useRef<HTMLParagraphElement | null>(null);
@@ -74,7 +80,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                   </>
                )}
             </div>
-
+            <ActionLabel type={action} className={css.action_type}/>
             <span className={css.round}>{round}</span>
          </header>
 

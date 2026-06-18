@@ -1,5 +1,7 @@
 import React from "react";
 
+import clsx from "clsx";
+
 import css from "./ActionLabel.module.scss";
 
 export type ActionLabelType =
@@ -14,6 +16,7 @@ export type ActionLabelType =
 interface ActionLabelProps {
    type: ActionLabelType;
    children?: React.ReactNode;
+   className?: string;
 }
 
 const labelText: Record<ActionLabelType, string> = {
@@ -26,6 +29,8 @@ const labelText: Record<ActionLabelType, string> = {
    divergent: "Divergent",
 };
 
-export const ActionLabel: React.FC<ActionLabelProps> = ({ type, children }) => {
-   return <div className={`${css.label} ${css[type]}`}>{children ?? labelText[type]}</div>;
+export const ActionLabel: React.FC<ActionLabelProps> = ({ type, children, className }) => {
+   return (
+      <div className={clsx(css.label, css[type], className)}>{children ?? labelText[type]}</div>
+   );
 };

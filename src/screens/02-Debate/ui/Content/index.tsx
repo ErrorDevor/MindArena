@@ -33,6 +33,7 @@ export const DebateScreen: React.FC = () => {
          topicId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % topicColors.length
       ];
    const [activeTab, setActiveTab] = React.useState(tabs[0]);
+
    return (
       <section className={css.content}>
          <div className={css.content_wrapper}>
@@ -85,7 +86,7 @@ export const DebateScreen: React.FC = () => {
 
                      <ul className={css.main_list_ai_cards}>
                         <li className={css.main_list_card}>
-                           <ActionLabel type="attack" />
+                           {/* <ActionLabel type="attack" /> */}
 
                            <DebateCard
                               aiName="GPT-4o"
@@ -93,6 +94,7 @@ export const DebateScreen: React.FC = () => {
                               messagesCount={2}
                               round="R1"
                               variant="red"
+                              action="attack"
                               text="Thesis assumes linear replacement but management serves political functions: buffer between strategy and execution. Al has no accountability. Firing someone requires a human face with legal standing. Thesis assumes linear replacement but management serves political functions: buffer between strategy and execution. Al has no accountability. Firing someone requires a human face with legal standing."
                               status={
                                  <div className={css.statusLabel}>
@@ -103,13 +105,14 @@ export const DebateScreen: React.FC = () => {
                         </li>
 
                         <li className={css.main_list_card}>
-                           <ActionLabel type="improve" />
+                           {/* <ActionLabel type="improve" /> */}
 
                            <DebateCard
                               aiName="Thesis V2"
                               aiAvatar="/images/ai/system.png"
                               round="R1"
                               variant="blue"
+                              action="improve"
                               text="Coordination functions — yes, automated within 3 years. Political functions (buffer, accountability) - no, 10+ years. Scope: SaaS <50 first."
                               status={
                                  <div className={css.status_label}>
@@ -136,7 +139,7 @@ export const DebateScreen: React.FC = () => {
 
                      <ul className={css.main_list_ai_cards}>
                         <li className={css.main_list_card}>
-                           <ActionLabel type="human" />
+                           {/* <ActionLabel type="human" /> */}
 
                            <DebateCard
                               founder
@@ -144,12 +147,13 @@ export const DebateScreen: React.FC = () => {
                               userName="@mikhail_k"
                               round="R2"
                               variant="purple"
+                              action="human"
                               text="Valve and Zappos tried flat structures before Al — both had serious scaling issues at 200+ people. Direct counterexample your thesis must address"
                            />
                         </li>
 
                         <li className={css.main_list_card}>
-                           <ActionLabel type="attack" />
+                           {/* <ActionLabel type="attack" /> */}
 
                            <DebateCard
                               aiName="Claude"
@@ -157,6 +161,7 @@ export const DebateScreen: React.FC = () => {
                               messagesCount={3}
                               round="R2"
                               variant="red"
+                              action="attack"
                               text="McKinsey 2024: 62% of managers spend 50%+ time on coordination - Al-replaceable. But 38% is strategic judgment. Thesis needs to quantify 
 which 38% survives and why that holds across org types. McKinsey 2024: 62% of managers spend 50%+ time on coordination - Al-replaceable. But 38% is strategic judgment. Thesis needs to quantify 
 which 38% survives and why that holds across org types."
@@ -164,13 +169,14 @@ which 38% survives and why that holds across org types."
                         </li>
 
                         <li className={css.main_list_card}>
-                           <ActionLabel type="research-gap" />
+                           {/* <ActionLabel type="research-gap" /> */}
 
                            <DebateCard
                               aiName="System"
                               aiAvatar="/images/ai/system.png"
                               round="auto"
                               variant="orange"
+                              action="research-gap"
                               text="No data exists on how organizational trust changes when human intermediary is replaced by Al agent. 3 inquiries blocked."
                               status={
                                  <div className={css.status_label}>
@@ -195,9 +201,11 @@ which 38% survives and why that holds across org types."
                <AiThinking />
             </div>
          </div>
+
          <div className={css.thesis_block}>
             <Thesis />
          </div>
+
          <div className={css.comments_block}>
             <Comments />
          </div>

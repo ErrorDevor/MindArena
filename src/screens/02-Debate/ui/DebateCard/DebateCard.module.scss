@@ -60,6 +60,11 @@
    }
 }
 
+.action_type {
+   margin-left: auto;
+   margin-right: 0.8rem
+}
+
 .round {
    @include flexCenter();
    width: fit-content;
@@ -76,7 +81,7 @@
 
 .text {
    @include fontInterTight(1.2rem, 1.2, 0, 500, rgba(0, 0, 0, 0.9));
-
+max-width: 90%;
    max-height: 2.6rem;
    overflow: hidden;
    @include transition((max-height));
@@ -113,7 +118,7 @@
 }
 
 .status {
-   margin-top: 1.6rem;
+   margin-top: 1.2rem;
    @include flexCenter();
    padding: 0 1.6rem;
    gap: 2rem;
