@@ -1,9 +1,11 @@
-"use client";
+﻿"use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import clsx from "clsx";
 
+import api from "shared/api/axiosInstance";
+import { useData } from "shared/context/DataContext";
 import { aiModels } from "shared/data/data";
 import { AiStack } from "shared/ui/components/AiStack";
 import { Tooltip } from "shared/ui/components/Tooltip";
@@ -18,19 +20,45 @@ interface Prop {
 }
 
 export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
+   const { addDebatedId } = useData();
+   const [inputValue, setInputValue] = useState("");
+
    const placeholder =
       variant !== "main"
          ? "Write your opinion, fact or example..."
          : "Write a thesis or open question — mode detected automatically….";
+
+   const handleSend = () => {
+      api.post("/debates", {
+         thesis: inputValue,
+         mode: "CONVERGENT",
+         visibility: "PUBLIC",
+         models: ["GPT", "GEMINI"],
+         maxRounds: 6,
+         quietMode: false,
+         sourceUrl: "https://www.linkedin.com",
+      })
+         .then((res) => {
+            addDebatedId(res.data.debateId);
+         })
+         .catch((err) => console.error("Error:", err.response?.data ?? err.message));
+      setInputValue("");
+   };
+
    return (
       <div className={clsx(css.input_panel, className)}>
          <div className={css.input_panel_inner}>
             <AiStack items={[aiModels[0], aiModels[1], aiModels[2], aiModels[3]]} />
 
-            <textarea placeholder={placeholder} className={css.input_panel_textarea} />
+            <textarea
+               placeholder={placeholder}
+               className={css.input_panel_textarea}
+               value={inputValue}
+               onChange={(e) => setInputValue(e.target.value)}
+            />
 
             <div className={css.button_block}>
-               <ButtonSend variant={variant} />
+               <ButtonSend variant={variant} onSend={handleSend} />
             </div>
          </div>
 
@@ -45,16 +73,17 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
 
 interface ButtonSendProp {
    variant?: "main" | "debate";
+   onSend?: () => void;
 }
 
-const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main" }) => {
+const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main", onSend }) => {
    const sendTokenRef = React.useRef<HTMLDivElement | null>(null);
    const [isTooltipOpen, setIsTooltipOpen] = React.useState(false);
 
    return (
       <>
          {variant === "main" ? (
-            <button className={css.send_button}>
+            <button className={css.send_button} onClick={onSend}>
                <SendIcon />
 
                <svg
@@ -66,7 +95,7 @@ const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main" }) => {
                   xmlns="http://www.w3.org/2000/svg"
                >
                   <path
-                     d="M2 0C2.0679 1.07519 2.9248 1.9321 4 2C2.9248 2.0679 2.0679 2.9248 2 4C1.9321 2.9248 1.07519 2.0679 0 2C1.07519 1.9321 1.9321 1.07519 2 0Z"
+                     d="M2 0C2.0679 1.07519 2.9248 1.9321 4 2C2.9248 2.0679 2.0679 2.9248 2 4C1.9321 2.9248 1.07519 2.0679 0 2C1.07519 1.9321 1.9321 1.07519 8 0Z"
                      fill="white"
                   />
                </svg>
@@ -91,7 +120,7 @@ const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main" }) => {
             </button>
          ) : (
             <div className={css.button_block}>
-               <Button variant="black" className={css.post_button}>
+               <Button variant="black" className={css.post_button} onClick={onSend}>
                   <SendIcon />
                   Post
                </Button>

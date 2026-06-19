@@ -3,6 +3,8 @@ import "shared/styles/index.scss";
 import { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
 
+import { DataProvider } from "shared/context/DataContext";
+
 const interTight = Inter_Tight({
    subsets: ["latin"],
    variable: "--font-inter-tight",
@@ -26,7 +28,9 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en" className={interTight.variable}>
-         <body>{children}</body>
+         <DataProvider>
+            <body>{children}</body>
+         </DataProvider>
       </html>
    );
 }

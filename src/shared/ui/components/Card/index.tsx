@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 import clsx from "clsx";
 
+import api from "shared/api/axiosInstance";
+import { useData } from "shared/context/DataContext";
 import { aiModels } from "shared/data/data";
 import { CardType } from "shared/lib/types/types";
 import Image from "shared/ui/base/Image";
@@ -20,7 +22,7 @@ import css from "./Card.module.scss";
 
 interface Prop {
    className?: string;
-   data: CardType;
+   data: any;
 }
 
 export const Card: React.FC<Prop> = ({ className, data }) => {
@@ -41,10 +43,12 @@ export const Card: React.FC<Prop> = ({ className, data }) => {
                <ul className={css.tags_list}>
                   {data.tier?.status === true && <li className={css.tags}>{data.tier?.name}</li>}
 
-                  {data.tags.map((item) => {
+                  {data.tags.map((item: any) => {
                      const color =
                         topicColors[
-                           item.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+                           item.id
+                              .split("")
+                              .reduce((acc: any, char: any) => acc + char.charCodeAt(0), 0) %
                               topicColors.length
                         ];
 

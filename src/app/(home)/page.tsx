@@ -14,9 +14,11 @@ import { AppLayout } from "shared/ui/templates/AppLayout";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default  function Home() {
    const [collapsed, setCollapsed] = React.useState(false);
 
+  
+ 
    return (
       <AppLayout
          isSidebarCollapsed={collapsed}
