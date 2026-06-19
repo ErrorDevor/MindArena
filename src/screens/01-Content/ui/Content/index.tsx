@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 
 import clsx from "clsx";
 
+import { login, saveTokens } from "app/auth/auth";
+
 import api from "shared/api/axiosInstance";
 import { useData } from "shared/context/DataContext";
 import { contentArray } from "shared/data/data";
 import { streamDebate } from "shared/lib/debate-stream";
-import { getDebate } from "shared/lib/debates";
+import { createDebate, getDebate } from "shared/lib/debates";
 import { Card } from "shared/ui/components/Card";
 import { Button } from "shared/ui/ui-kit/Button";
 import { Checkbox } from "shared/ui/ui-kit/Checkbox";
@@ -84,7 +86,39 @@ export const Content: React.FC<Prop> = ({ className }) => {
       });
    };
 
+   useEffect(() => {
+      const init = async () => {
+         try {
+            const authData = await login({
+               email: "user@example.com",
+               password: "strongPass123",
+            });
+
+            console.log("authData:", authData);
+
+            const accessToken = authData.accessToken;
+
+            if (!accessToken) {
+               throw new Error("Access token not found");
+            }
+
+            localStorage.setItem("accessToken", accessToken);
+
+            const debateRes = await createDebate("Test thesis");
+
+            console.log("created debate:", debateRes.data);
+
+            addDebatedId(debateRes.data.debateId);
+         } catch (err: any) {
+            console.error("init error:", err.response?.data ?? err.message);
+         }
+      };
+
+      init();
+   }, []);
+
    if (!debate) return <p>Loading...</p>;
+
    return (
       <div className={clsx(css.content, className)}>
          <div className={css.content_top}>
@@ -122,9 +156,10 @@ export const Content: React.FC<Prop> = ({ className }) => {
          ))}
 
          <div className={css.content_list}>
-            {dataArray.map((data) => (
+            {/* {dataArray.map((data) => (
                <Card key={data.id} data={data} />
-            ))}
+            ))} */}
+            {debate && <Card data={debate} />}
          </div>
       </div>
    );

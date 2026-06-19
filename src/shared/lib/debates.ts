@@ -17,7 +17,8 @@ export async function createDebate(
 }
 
 export async function getDebate(id: string) {
-   return api.get(`/debates/${id}`);
+   const res = await api.get(`/debates/${id}`);
+   return res.data;
 }
 
 export async function listDebates() {
