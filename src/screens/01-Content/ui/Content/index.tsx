@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 
 import clsx from "clsx";
 
-import { login, saveTokens } from "app/auth/auth";
+import { login, saveTokens } from "shared/lib/auth/auth";
 
 import api from "shared/api/axiosInstance";
 import { useData } from "shared/context/DataContext";
