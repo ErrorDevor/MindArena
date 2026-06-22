@@ -35,7 +35,7 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
          thesis: inputValue,
          mode: "CONVERGENT",
          visibility: "PUBLIC",
-         models: ["GPT", "CLAUDE", "GEMINI"],
+         models: ["GPT", "GEMINI"],
          maxRounds: 6,
          quietMode: false,
          sourceUrl: "https://www.linkedin.com",
