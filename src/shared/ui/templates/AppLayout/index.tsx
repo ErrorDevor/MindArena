@@ -14,6 +14,7 @@ interface Props {
    promptArea?: React.ReactNode;
    isSidebarCollapsed?: boolean;
    isComments?: boolean;
+   ispromptArea?: boolean;
    className?: string;
 }
 
@@ -28,6 +29,7 @@ export const AppLayout = forwardRef<HTMLDivElement, Props>(
          children,
          isSidebarCollapsed = false,
          isComments = true,
+         ispromptArea = true
       },
       ref
    ) => {
@@ -46,10 +48,10 @@ export const AppLayout = forwardRef<HTMLDivElement, Props>(
             <div className={css.body}>
                {sidebar}
 
-               <div className={clsx(css.center, !isComments && css.debate_center)}>
+               <div className={clsx(css.center, !isComments && css.debate_center, !ispromptArea && css.debate_main)}>
                   <div className={css.main_content}>{children}</div>
 
-                  {promptArea && <div className={css.prompt_area}>{promptArea}</div>}
+                  {ispromptArea && <div className={css.prompt_area}>{promptArea}</div>}
                </div>
 
                {isComments && commentsSidebar}

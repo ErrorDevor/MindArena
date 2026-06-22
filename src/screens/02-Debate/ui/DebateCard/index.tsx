@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useRouter } from "next/navigation";
+
 import clsx from "clsx";
 
 import Image from "shared/ui/base/Image";
@@ -20,6 +22,7 @@ interface DebateCardProps {
    messagesCount?: number;
    round: string;
    text: string;
+   title?: string;
    status?: React.ReactNode;
    variant?: DebateCardVariant;
    action: ActionLabelType;
@@ -34,6 +37,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
    messagesCount,
    round,
    text,
+   title,
    status,
    variant = "red",
    action,
@@ -50,6 +54,25 @@ export const DebateCard: React.FC<DebateCardProps> = ({
 
       setHasOverflow(el.scrollHeight > el.clientHeight);
    }, [text]);
+
+   const router = useRouter();
+
+   const handleReadMore = () => {
+      sessionStorage.setItem(
+         "debate-full-message",
+         JSON.stringify({
+            title,
+            round,
+            text,
+            aiName: founder ? userName : aiName,
+            action,
+            founder,
+            aiAvatar,
+         })
+      );
+
+      router.push(`/debate/${crypto.randomUUID()}`);
+   };
 
    return (
       <article className={clsx(css.card, css[variant], className ?? "")}>
@@ -80,7 +103,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                   </>
                )}
             </div>
-            <ActionLabel type={action} className={css.action_type}/>
+            <ActionLabel type={action} className={css.action_type} />
             <span className={css.round}>{round}</span>
          </header>
 
@@ -93,7 +116,8 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                <button
                   className={`${css.read_more} ${isExpanded ? css.read_more_active : ""}`}
                   type="button"
-                  onClick={() => setIsExpanded((prev) => !prev)}
+                  // onClick={() => setIsExpanded((prev) => !prev)}
+                  onClick={handleReadMore}
                >
                   {isExpanded ? "Show Less" : "Read More"}
                   <DropdownArrowIcon />
