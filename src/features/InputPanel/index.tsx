@@ -29,6 +29,8 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
          : "Write a thesis or open question — mode detected automatically….";
 
    const handleSend = () => {
+      if (!inputValue.trim()) return;
+
       api.post("/debates", {
          thesis: inputValue,
          mode: "CONVERGENT",
@@ -55,6 +57,15 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
                className={css.input_panel_textarea}
                value={inputValue}
                onChange={(e) => setInputValue(e.target.value)}
+               onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.ctrlKey) {
+                     e.preventDefault();
+
+                     if (!inputValue.trim()) return;
+
+                     handleSend();
+                  }
+               }}
             />
 
             <div className={css.button_block}>
