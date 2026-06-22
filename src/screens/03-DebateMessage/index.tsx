@@ -145,19 +145,19 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
          <main className={css.debate_message_body} ref={bodyRef}>
             <header className={css.header}>
                <div className={css.meta}>
-                  <span className={css.round}>{round} —</span>
+                  {/* <span className={css.round}>{round} —</span> */}
 
                   <div className={css.ai}>
                      {data.aiAvatar && <Image.Default src={data.aiAvatar} className={css.avatar} />}
                      <span>{data.aiName}</span>
                   </div>
 
-                  <ActionLabel type={data.action} />
+                  {/* <ActionLabel type={data.action} /> */}
                </div>
 
                <div className={css.title_block}>
                   <h6 className={css.thesis}>Thesis v1</h6>
-                  <h5 className={css.title}>{data.title}</h5>
+                  <h5 className={css.title}>"{data.title}"</h5>
                </div>
             </header>
 

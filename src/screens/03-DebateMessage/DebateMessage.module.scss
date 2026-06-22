@@ -118,13 +118,13 @@
    align-items: center;
    gap: 1rem;
 
-   @include fontInterTight(3.2rem, 1, -0.01em, 500, getColorBlack(1));
+   @include fontInterTight(1.4rem, 1, -0.01em, 500, getColorBlack(1));
 }
 
 .avatar {
    width: 2.4rem;
    height: 2.4rem;
-   border-radius: 50%;
+   border-radius: 0.4rem;
    object-fit: cover;
 }
 
@@ -140,7 +140,7 @@
 }
 
 .title {
-   @include fontInterTight(1.6rem, 1, -0.01em, 500, getColorBlack(1));
+   @include fontInterTight(2.4rem, 1, -0.01em, 500, getColorBlack(1));
 }
 
 .divider {
