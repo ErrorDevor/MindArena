@@ -25,6 +25,7 @@ import RaundArrowIcon from "../RaundArrow";
 import css from "./DebateScreen.module.scss";
 
 const tabs = ["Attack Loop", "Quantum - 1247 paths"];
+const debateTitle = "Al will replace middle management within 3 years";
 
 export const DebateScreen: React.FC = () => {
    const topicId = "Ai Labor";
@@ -53,7 +54,7 @@ export const DebateScreen: React.FC = () => {
                   </button>
                </div>
 
-               <h2 className={css.title}> Al will replace middle management within 3 years </h2>
+               <h2 className={css.title}>{debateTitle}</h2>
 
                <ul className={css.tags_list}>
                   <li className={css.tags}>Tier 2</li>
@@ -89,6 +90,7 @@ export const DebateScreen: React.FC = () => {
                            {/* <ActionLabel type="attack" /> */}
 
                            <DebateCard
+                              title={debateTitle}
                               aiName="GPT-4o"
                               aiAvatar="/images/ai/chatgpt-icon.png"
                               messagesCount={2}
@@ -108,6 +110,7 @@ export const DebateScreen: React.FC = () => {
                            {/* <ActionLabel type="improve" /> */}
 
                            <DebateCard
+                              title={debateTitle}
                               aiName="Thesis V2"
                               aiAvatar="/images/ai/system.png"
                               round="R1"
@@ -142,6 +145,7 @@ export const DebateScreen: React.FC = () => {
                            {/* <ActionLabel type="human" /> */}
 
                            <DebateCard
+                              title={debateTitle}
                               founder
                               messagesCount={1}
                               userName="@mikhail_k"
@@ -156,6 +160,7 @@ export const DebateScreen: React.FC = () => {
                            {/* <ActionLabel type="attack" /> */}
 
                            <DebateCard
+                              title={debateTitle}
                               aiName="Claude"
                               aiAvatar="/images/ai/claude-ai-icon.png"
                               messagesCount={3}
@@ -172,6 +177,7 @@ which 38% survives and why that holds across org types."
                            {/* <ActionLabel type="research-gap" /> */}
 
                            <DebateCard
+                              title={debateTitle}
                               aiName="System"
                               aiAvatar="/images/ai/system.png"
                               round="auto"

@@ -48,6 +48,11 @@
    // background-color: #F6F6F6;
 }
 
+.debate_main {
+   display: flex;
+   flex-direction: column;
+}
+
 .main_content {
    min-width: 0;
    min-height: 0;
