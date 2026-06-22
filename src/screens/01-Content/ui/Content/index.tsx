@@ -3,11 +3,10 @@ import React, { useEffect, useState } from "react";
 
 import clsx from "clsx";
 
-import { login, saveTokens } from "shared/lib/auth/auth";
-
 import api from "shared/api/axiosInstance";
 import { useData } from "shared/context/DataContext";
 import { contentArray } from "shared/data/data";
+import { login, saveTokens } from "shared/lib/auth/auth";
 import { streamDebate } from "shared/lib/debate-stream";
 import { createDebate, getDebate } from "shared/lib/debates";
 import { Card } from "shared/ui/components/Card";
@@ -103,7 +102,7 @@ export const Content: React.FC<Prop> = ({ className }) => {
             }
 
             localStorage.setItem("accessToken", accessToken);
-
+            document.cookie = `accessToken=${accessToken}; path=/; SameSite=Lax`;
             const debateRes = await createDebate("Test thesis");
 
             console.log("created debate:", debateRes.data);
