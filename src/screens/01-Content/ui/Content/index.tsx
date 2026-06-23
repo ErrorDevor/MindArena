@@ -121,7 +121,7 @@ export const Content: React.FC<Prop> = ({ className }) => {
    return (
       <div className={clsx(css.content, className)}>
          <div className={css.content_top}>
-            <h2>Feed TEST DEPLOY</h2>
+            <h2>Feed</h2>
 
             <div className={css.divider} />
 
