@@ -19,7 +19,8 @@ type StreamHandlers = {
 
 export function streamDebate(debateId: string, handlers: StreamHandlers) {
    const controller = new AbortController();
-   const token = localStorage.getItem("access_token");
+   const token =
+      localStorage.getItem("accessToken") ?? process.env.NEXT_PUBLIC_API_TOKEN ?? null;
 
    fetchEventSource(`${process.env.NEXT_PUBLIC_API_URL}/debates/${debateId}/stream`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -33,9 +34,9 @@ export function streamDebate(debateId: string, handlers: StreamHandlers) {
          if (eventName === "debate.completed") handlers.onCompleted?.(data);
          if (eventName === "debate.failed") handlers.onFailed?.();
       },
-      onerror() {
+      onerror(err) {
          handlers.onFailed?.();
-         controller.abort();
+         throw err; // прекращаем retry, но не abort — браузер закриє сам
       },
       onclose() {
          handlers.onClose?.();
