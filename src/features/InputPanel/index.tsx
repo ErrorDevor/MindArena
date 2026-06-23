@@ -2,11 +2,16 @@
 
 import React, { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import clsx from "clsx";
 
 import api from "shared/api/axiosInstance";
 import { useData } from "shared/context/DataContext";
 import { aiModels } from "shared/data/data";
+import { login, saveTokens } from "shared/lib/auth/auth";
+import { getDebate } from "shared/lib/debates";
+import { saveDebateToStorage } from "shared/store/debatesStorage";
 import { AiStack } from "shared/ui/components/AiStack";
 import { Tooltip } from "shared/ui/components/Tooltip";
 import { SendIcon, TokenIcon } from "shared/ui/icons";
@@ -21,6 +26,7 @@ interface Prop {
 
 export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
    const { addDebatedId } = useData();
+   const router = useRouter();
    const [inputValue, setInputValue] = useState("");
 
    const placeholder =
@@ -28,23 +34,65 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
          ? "Write your opinion, fact or example..."
          : "Write a thesis or open question — mode detected automatically….";
 
-   const handleSend = () => {
-      if (!inputValue.trim()) return;
+   const ensureAuth = async () => {
+      const authData = await login({
+         email: "user@example.com",
+         password: "strongPass123",
+      });
 
-      api.post("/debates", {
-         thesis: inputValue,
-         mode: "CONVERGENT",
-         visibility: "PUBLIC",
-         models: ["GPT", "CLAUDE", "GEMINI"],
-         maxRounds: 6,
-         quietMode: false,
-         sourceUrl: "https://www.linkedin.com",
-      })
-         .then((res) => {
-            addDebatedId(res.data.debateId);
-         })
-         .catch((err) => console.error("Error:", err.response?.data ?? err.message));
-      setInputValue("");
+      const accessToken = authData.accessToken;
+
+      if (!accessToken) {
+         throw new Error("Access token not found");
+      }
+
+      localStorage.setItem("accessToken", accessToken);
+      document.cookie = `accessToken=${accessToken}; path=/; SameSite=Lax`;
+
+      return accessToken;
+   };
+
+   const handleSend = async () => {
+      const thesis = inputValue.trim();
+
+      if (!thesis) return;
+
+      try {
+         await ensureAuth();
+
+         setInputValue("");
+
+         const token = await ensureAuth();
+
+         const res = await api.post(
+            "/debates",
+            {
+               thesis,
+               mode: "CONVERGENT",
+               visibility: "PUBLIC",
+               models: ["GPT", "GEMINI"],
+               maxRounds: 6,
+               quietMode: false,
+               sourceUrl: "https://www.linkedin.com",
+            },
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+               },
+            }
+         );
+
+         const debateId = res.data.debateId;
+
+         const debate = await getDebate(debateId);
+
+         saveDebateToStorage(debate);
+
+         addDebatedId(debateId);
+         router.push(`/debate/${debateId}`);
+      } catch (err: any) {
+         console.error("Error:", err.response?.data ?? err.message);
+      }
    };
 
    return (
@@ -60,9 +108,6 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
                onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.ctrlKey) {
                      e.preventDefault();
-
-                     if (!inputValue.trim()) return;
-
                      handleSend();
                   }
                }}

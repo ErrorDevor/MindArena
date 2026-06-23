@@ -1,3 +1,17 @@
+export type DebateAttack = {
+   eventId: string;
+   roundNumber: number;
+   agent: "GPT" | "GEMINI" | string;
+   role: string;
+   content: string;
+   metadata?: {
+      model?: string;
+      provider?: string;
+      attackId?: string;
+   };
+};
+
+// Mock Types
 export type CardType = {
    id: string;
    status: { state: string; variant: "live" | "convergent" | "research" | "quantum" | "divergent" };
