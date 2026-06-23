@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 
 import clsx from "clsx";
 
-import api from "shared/api/axiosInstance";
-import { useData } from "shared/context/DataContext";
+// import api from "shared/api/axiosInstance";
+// import { useData } from "shared/context/DataContext";
 import { aiModels } from "shared/data/data";
-import { CardType } from "shared/lib/types/types";
+// import { CardType } from "shared/lib/types/types";
 import Image from "shared/ui/base/Image";
 import { ClockIcon, ExchangeIcon, MessageIcon } from "shared/ui/icons";
 // import { AccountButton } from "shared/ui/ui-kit/AccountButton";
@@ -23,16 +23,17 @@ import css from "./Card.module.scss";
 interface Prop {
    className?: string;
    data: any;
+   onClick?: () => void;
 }
 
-export const Card: React.FC<Prop> = ({ className, data }) => {
+export const Card: React.FC<Prop> = ({ className, data, onClick  }) => {
    const aiStack =
       data.status.variant === "live" || data.status.variant === "convergent"
          ? [aiModels[0], aiModels[2], aiModels[3]]
          : [aiModels[0], aiModels[1], aiModels[2], aiModels[3]];
 
    return (
-      <div className={clsx(css.card, className)}>
+      <div className={clsx(css.card, className)} onClick={onClick} role="button" tabIndex={0}>
          <div className={css.card_header}>
             <div className={css.card_top}>
                <UserInfo userName={data.user.name} userAvatar={data.user.avatar}/>

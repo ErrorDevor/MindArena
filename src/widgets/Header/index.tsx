@@ -2,7 +2,9 @@
 
 import React from "react";
 
-import clsx from "clsx";
+import { useRouter } from "next/navigation";
+
+// import clsx from "clsx";
 
 import Image from "shared/ui/base/Image";
 import { NextLink } from "shared/ui/base/NextLink";
@@ -16,13 +18,14 @@ import {
    RoomsIcon,
    WrenchIcon,
 } from "shared/ui/icons";
-import { AccountButton } from "shared/ui/ui-kit/AccountButton";
+// import { AccountButton } from "shared/ui/ui-kit/AccountButton";
 import { Button } from "shared/ui/ui-kit/Button";
 import { NotifyButton } from "shared/ui/ui-kit/NotifyButton";
 
 import css from "./Header.module.scss";
 
 export const Header: React.FC = () => {
+   const router = useRouter();
    return (
       <header className={css.header}>
          <div className={css.header_left_side}>
@@ -34,7 +37,12 @@ export const Header: React.FC = () => {
             <div className={css.divider} />
 
             <div className={css.header_action_buttons}>
-               <Button variant="white" className={css.button_action} active>
+               <Button
+                  variant="white"
+                  className={css.button_action}
+                  active
+                  onClick={() => router.push("/")}
+               >
                   <FeedIcon />
                   Feed
                </Button>
@@ -58,8 +66,6 @@ export const Header: React.FC = () => {
                   Inquiry
                </Button>
                <Button variant="black" className={css.button_inquiry}>
-                  
-
                   <WrenchIcon /> Build Room
                </Button>
             </div>

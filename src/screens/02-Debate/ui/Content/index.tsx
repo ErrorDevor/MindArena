@@ -1,18 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+import { useParams } from "next/navigation";
 
 import clsx from "clsx";
 
 import { Comments } from "features/Comment";
 import { Thesis } from "features/Thesis";
 
-import Image from "shared/ui/base/Image";
+import { useData } from "shared/context/DataContext";
+import { streamDebate } from "shared/lib/debate-stream";
+import { getDebate } from "shared/lib/debates";
+import { DebateAttack } from "shared/lib/types/types";
+// import Image from "shared/ui/base/Image";
 import { AiThinking } from "shared/ui/components/AiThinking";
-import { SegmentProgress } from "shared/ui/components/SegmentProgress";
+// import { SegmentProgress } from "shared/ui/components/SegmentProgress";
 import { UserInfo } from "shared/ui/components/UserInfo";
 import { ArrowIcon, ExchangeIcon } from "shared/ui/icons";
-import { ActionLabel } from "shared/ui/ui-kit/ActionLabel";
+// import { ActionLabel } from "shared/ui/ui-kit/ActionLabel";
 import { Button } from "shared/ui/ui-kit/Button";
 import { LiveStatus } from "shared/ui/ui-kit/LiveStatus";
 import { RaundLabel } from "shared/ui/ui-kit/RaundLabel";
@@ -34,6 +40,63 @@ export const DebateScreen: React.FC = () => {
          topicId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % topicColors.length
       ];
    const [activeTab, setActiveTab] = React.useState(tabs[0]);
+   const [debate, setDebate] = useState<any>(null);
+   const { debateId: contextDebateId } = useData();
+   const params = useParams();
+
+   const routeDebateId = params?.debateId as string | undefined;
+   const currentDebateId = routeDebateId ?? contextDebateId;
+   const [attacks, setAttacks] = useState<DebateAttack[]>([]);
+   const [currentAgent, setCurrentAgent] = useState("");
+   const [isCompleted, setIsCompleted] = useState(false);
+
+   useEffect(() => {
+      if (!currentDebateId) return;
+
+      getDebate(currentDebateId)
+         .then((data) => {
+            console.log("GET debate data:", data);
+            setDebate(data);
+         })
+         .catch((err: any) => {
+            console.error("get debate error:", err.response?.data ?? err.message);
+         });
+
+      const close = streamDebate(currentDebateId, {
+         onEvent(eventName: string, data: unknown) {
+            console.log("SSE event:", eventName, data);
+
+            if (eventName === "agent.attack.created") {
+               const attack = data as DebateAttack;
+
+               setCurrentAgent(attack.agent);
+               setAttacks((prev) => [...prev, attack]);
+            }
+
+            if (eventName === "debate.completed") {
+               setIsCompleted(true);
+            }
+         },
+      });
+
+      return close;
+   }, [currentDebateId]);
+
+   const attacksByRound = attacks.reduce<Record<number, DebateAttack[]>>((acc, attack) => {
+      const round = attack.roundNumber ?? 0;
+
+      if (!acc[round]) {
+         acc[round] = [];
+      }
+
+      acc[round].push(attack);
+
+      return acc;
+   }, {});
+
+   const roundNumbers = Object.keys(attacksByRound)
+      .map(Number)
+      .sort((a, b) => a - b);
 
    return (
       <section className={css.content}>
@@ -41,9 +104,20 @@ export const DebateScreen: React.FC = () => {
             <div className={css.main_block}>
                <div className={css.main_block_top}>
                   <div className={css.top_info}>
-                     <UserInfo userName="@truthseeker" userAvatar="" />
+                     <UserInfo
+                        userName={debate?.user?.name ?? "@debater"}
+                        userAvatar={debate?.user?.avatar ?? ""}
+                     />
                      <span className={css.dot} />
-                     <h6 className={css.user_date}>14 Jun 2026</h6>
+                     <h6 className={css.user_date}>
+                        {debate?.createdAt
+                           ? new Date(debate.createdAt).toLocaleDateString("en-US", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                             })
+                           : "Loading..."}
+                     </h6>
                      <span className={css.dot} />
                      <LiveStatus />
                   </div>
@@ -54,7 +128,7 @@ export const DebateScreen: React.FC = () => {
                   </button>
                </div>
 
-               <h2 className={css.title}>{debateTitle}</h2>
+               <h2 className={css.title}>{debate?.title}</h2>
 
                <ul className={css.tags_list}>
                   <li className={css.tags}>Tier 2</li>
@@ -82,129 +156,46 @@ export const DebateScreen: React.FC = () => {
                </div>
 
                <div className={css.main_list}>
-                  <div className={css.main_list_raunds}>
-                     <RaundLabel raund={1} />
-
-                     <ul className={css.main_list_ai_cards}>
-                        <li className={css.main_list_card}>
-                           {/* <ActionLabel type="attack" /> */}
-
-                           <DebateCard
-                              title={debateTitle}
-                              aiName="GPT-4o"
-                              aiAvatar="/images/ai/chatgpt-icon.png"
-                              messagesCount={2}
-                              round="R1"
-                              variant="red"
-                              action="attack"
-                              text="Thesis assumes linear replacement but management serves political functions: buffer between strategy and execution. Al has no accountability. Firing someone requires a human face with legal standing. Thesis assumes linear replacement but management serves political functions: buffer between strategy and execution. Al has no accountability. Firing someone requires a human face with legal standing."
-                              status={
-                                 <div className={css.statusLabel}>
-                                    Gap: coordination # politics. Thesis conflates two roles.
-                                 </div>
-                              }
+                  {roundNumbers.map((roundNumber, index) => (
+                     <React.Fragment key={roundNumber}>
+                        {index > 0 && (
+                           <RaundArrowIcon
+                              style={{
+                                 width: "0.9rem",
+                                 height: "3.5rem",
+                                 margin: "0 auto",
+                              }}
                            />
-                        </li>
+                        )}
 
-                        <li className={css.main_list_card}>
-                           {/* <ActionLabel type="improve" /> */}
+                        <div className={css.main_list_raunds}>
+                           <RaundLabel raund={roundNumber} />
 
-                           <DebateCard
-                              title={debateTitle}
-                              aiName="Thesis V2"
-                              aiAvatar="/images/ai/system.png"
-                              round="R1"
-                              variant="blue"
-                              action="improve"
-                              text="Coordination functions — yes, automated within 3 years. Political functions (buffer, accountability) - no, 10+ years. Scope: SaaS <50 first."
-                              status={
-                                 <div className={css.status_label}>
-                                    <div className={css.status_label_item}>
-                                       <Image.Default src="/icons/tick-circle.svg" /> Closed: roles
-                                       conflation
-                                    </div>
-
-                                    <div className={css.status_label_item}>
-                                       <Image.Default src="/icons/close-circle.svg" />
-                                       Open: how to measure what remains
-                                    </div>
-                                 </div>
-                              }
-                           />
-                        </li>
-                     </ul>
-                  </div>
-
-                  <RaundArrowIcon style={{ width: "0.9rem", height: "3.5rem", margin: "0 auto" }} />
-
-                  <div className={css.main_list_raunds}>
-                     <RaundLabel raund={2} />
-
-                     <ul className={css.main_list_ai_cards}>
-                        <li className={css.main_list_card}>
-                           {/* <ActionLabel type="human" /> */}
-
-                           <DebateCard
-                              title={debateTitle}
-                              founder
-                              messagesCount={1}
-                              userName="@mikhail_k"
-                              round="R2"
-                              variant="purple"
-                              action="human"
-                              text="Valve and Zappos tried flat structures before Al — both had serious scaling issues at 200+ people. Direct counterexample your thesis must address"
-                           />
-                        </li>
-
-                        <li className={css.main_list_card}>
-                           {/* <ActionLabel type="attack" /> */}
-
-                           <DebateCard
-                              title={debateTitle}
-                              aiName="Claude"
-                              aiAvatar="/images/ai/claude-ai-icon.png"
-                              messagesCount={3}
-                              round="R2"
-                              variant="red"
-                              action="attack"
-                              text="McKinsey 2024: 62% of managers spend 50%+ time on coordination - Al-replaceable. But 38% is strategic judgment. Thesis needs to quantify 
-which 38% survives and why that holds across org types. McKinsey 2024: 62% of managers spend 50%+ time on coordination - Al-replaceable. But 38% is strategic judgment. Thesis needs to quantify 
-which 38% survives and why that holds across org types."
-                           />
-                        </li>
-
-                        <li className={css.main_list_card}>
-                           {/* <ActionLabel type="research-gap" /> */}
-
-                           <DebateCard
-                              title={debateTitle}
-                              aiName="System"
-                              aiAvatar="/images/ai/system.png"
-                              round="auto"
-                              variant="orange"
-                              action="research-gap"
-                              text="No data exists on how organizational trust changes when human intermediary is replaced by Al agent. 3 inquiries blocked."
-                              status={
-                                 <div className={css.status_label}>
-                                    <SegmentProgress value={41} max={100} segments={22} />
-                                    <div className={css.status_label_progress}>
-                                       <span>&nbsp;$340</span>&nbsp;of&nbsp;
-                                       <span>&nbsp;$2000</span>
-                                    </div>
-                                    <div className={css.status_label_item}>
-                                       <span className={css.dot} />
-                                       <ExchangeIcon />
-                                       <p>23&nbsp;Supporters</p>
-                                    </div>
-                                 </div>
-                              }
-                           />
-                        </li>
-                     </ul>
-                  </div>
+                           <ul className={css.main_list_ai_cards}>
+                              {attacksByRound[roundNumber].map((attack, id) => (
+                                 <li key={attack.eventId + id} className={css.main_list_card}>
+                                    <DebateCard
+                                       title={debate?.title ?? debateTitle}
+                                       aiName={attack.agent}
+                                       aiAvatar={
+                                          attack.agent === "GPT"
+                                             ? "/images/ai/chatgpt-icon.png"
+                                             : "/images/ai/gemini-ai-icon.png"
+                                       }
+                                       round={`R${attack.roundNumber}`}
+                                       variant="red"
+                                       action="attack"
+                                       text={attack.content}
+                                    />
+                                 </li>
+                              ))}
+                           </ul>
+                        </div>
+                     </React.Fragment>
+                  ))}
                </div>
 
-               <AiThinking />
+               {currentDebateId && !isCompleted && <AiThinking ai={currentAgent} />}
             </div>
          </div>
 
