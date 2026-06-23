@@ -1,29 +1,32 @@
 name: Deploy to VPS
 
 on:
-  push:
-    branches:
-      - develop
+   push:
+      branches:
+         - develop
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+   deploy:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Prepare SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY_BASE64 }}" | base64 -d > ~/.ssh/mindarena_deploy
-          chmod 600 ~/.ssh/mindarena_deploy
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      steps:
+         - name: Prepare SSH key
+           run: |
+              mkdir -p ~/.ssh
+              echo "${{ secrets.SERVER_SSH_KEY_BASE64 }}" | base64 -d > ~/.ssh/mindarena_deploy
+              chmod 600 ~/.ssh/mindarena_deploy
+              ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy via SSH
-        run: |
-          ssh -i ~/.ssh/mindarena_deploy ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            cd /var/www/mindarena-frontend
-            git pull origin develop
-            npm install
-            npm run build
-            pm2 restart mindarena-frontend
-            pm2 save
-          EOF
+         - name: Deploy via SSH
+           run: |
+              ssh -i ~/.ssh/mindarena_deploy ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+                export NVM_DIR="$HOME/.nvm"
+                [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+                cd /var/www/mindarena-frontend
+                git pull origin develop
+                npm install
+                npm run build
+                pm2 restart mindarena-frontend
+                pm2 save
+              EOF
