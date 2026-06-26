@@ -12,7 +12,7 @@ export async function createDebate(
       thesis,
       mode: options?.mode ?? "CONVERGENT",
       maxRounds: options?.maxRounds ?? 3,
-      models: options?.models ?? ["GPT", "CLAUDE", "GEMINI", "GROK"],
+      models: options?.models ?? ["GPT", "CLAUDE", "GEMINI", "GROK", "GLM", "KIMI"],
    });
 }
 
