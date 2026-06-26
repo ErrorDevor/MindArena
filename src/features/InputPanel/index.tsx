@@ -33,7 +33,7 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
 
    const placeholder =
       variant !== "main"
-         ? "Write your opinion, fact or example..."
+         ? "Write your opinion, fact or example...."
          : "Write a thesis or open question — mode detected automatically….";
 
    const ensureAuth = async () => {
