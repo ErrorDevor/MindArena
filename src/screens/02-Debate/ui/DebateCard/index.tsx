@@ -71,7 +71,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
          })
       );
 
-      router.push(`/debate/${crypto.randomUUID()}`);
+      router.push("/message");
    };
 
    return (

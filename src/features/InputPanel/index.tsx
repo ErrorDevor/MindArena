@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import clsx from "clsx";
 
@@ -25,8 +25,10 @@ interface Prop {
 }
 
 export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
-   const { addDebatedId } = useData();
+   const { addDebatedId, debateId: contextDebateId } = useData();
    const router = useRouter();
+   const params = useParams();
+   const debateId = (params?.debateId as string) ?? contextDebateId;
    const [inputValue, setInputValue] = useState("");
 
    const placeholder =
@@ -95,6 +97,22 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
       }
    };
 
+   const handleComment = async () => {
+      const content = inputValue.trim();
+
+      if (!content || !debateId) return;
+
+      try {
+         await ensureAuth();
+         await api.post(`/debates/${debateId}/comments`, { content });
+         setInputValue("");
+      } catch (err: any) {
+         console.error("Comment error:", err.response?.data ?? err.message);
+      }
+   };
+
+   const activeHandler = variant === "debate" ? handleComment : handleSend;
+
    return (
       <div className={clsx(css.input_panel, className)}>
          <div className={css.input_panel_inner}>
@@ -108,13 +126,13 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
                onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.ctrlKey) {
                      e.preventDefault();
-                     handleSend();
+                     activeHandler();
                   }
                }}
             />
 
             <div className={css.button_block}>
-               <ButtonSend variant={variant} onSend={handleSend} />
+               <ButtonSend variant={variant} onSend={activeHandler} />
             </div>
          </div>
 
