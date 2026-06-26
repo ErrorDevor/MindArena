@@ -187,6 +187,44 @@
    }
 }
 
+/*Final*/
+.final_block {
+   margin-top: 2.4rem;
+   display: flex;
+   flex-direction: column;
+   gap: 2rem;
+}
+
+.final_section {
+   h4 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: getColorBlack(0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+   }
+
+   ul {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-left: 1.6rem;
+   }
+
+   li {
+      font-size: 1.3rem;
+      line-height: 1.5;
+      color: getColorBlack(0.9);
+   }
+
+   p {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: getColorBlack(1);
+   }
+}
+
 /*Main*/
 .main_list {
    display: flex;

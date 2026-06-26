@@ -24,3 +24,8 @@ export async function getDebate(id: string) {
 export async function listDebates() {
    return api.get("/debates");
 }
+
+export async function getFinal(id: string) {
+   const res = await api.get(`/debates/${id}/final`);
+   return res.data;
+}
