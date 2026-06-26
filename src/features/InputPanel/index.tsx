@@ -60,11 +60,9 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
       if (!thesis) return;
 
       try {
-         await ensureAuth();
+         const token = await ensureAuth();
 
          setInputValue("");
-
-         const token = await ensureAuth();
 
          const res = await api.post(
             "/debates",
@@ -72,7 +70,7 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
                thesis,
                mode: "CONVERGENT",
                visibility: "PUBLIC",
-               models: ["GPT", "GEMINI"],
+               models: ["GPT", "CLAUDE", "GEMINI", "GROK", "GLM", "KIMI"],
                maxRounds: 6,
                quietMode: false,
                sourceUrl: "https://www.linkedin.com",
