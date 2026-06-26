@@ -70,25 +70,16 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
    const [activeSectionId, setActiveSectionId] = React.useState(sections[0].id);
    const bodyRef = React.useRef<HTMLElement | null>(null);
 
-   // React.useEffect(() => {
-   //    const saved = sessionStorage.getItem("debate-full-message");
-
-   //    if (!saved) {
-   //       router.push("/debate");
-   //       return;
-   //    }
-
-   //    setData(JSON.parse(saved));
-   // }, [router]);
-
    React.useEffect(() => {
-   setData({
-      aiName: "GPT",
-      aiAvatar: "/images/ai/chatgpt-icon.png",
-      title: "AI will replace middle management within 3 years",
-      round: "R1",
-   });
-}, []);
+      const saved = sessionStorage.getItem("debate-full-message");
+
+      if (!saved) {
+         router.push("/debate");
+         return;
+      }
+
+      setData(JSON.parse(saved));
+   }, [router]);
 
    const handleScrollTo = (id: string) => {
       const container = bodyRef.current;
@@ -170,23 +161,7 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
 
             <section id="attack-summary" className={css.section}>
                <h3>Attack Summary</h3>
-
-               <p>
-                  The thesis assumes that management is primarily a coordination function. However,
-                  middle management also performs political, social, and accountability-related
-                  roles that are difficult to automate.
-               </p>
-
-               <p>
-                  AI can coordinate tasks, schedules, reporting, and workflows, but organizations
-                  rely on managers for conflict resolution, performance discussions, trust building,
-                  and legal accountability.
-               </p>
-
-               <p>
-                  The claim therefore overestimates the portion of management that can realistically
-                  be replaced by software.
-               </p>
+               <p>{data.text}</p>
             </section>
 
             <div className={css.divider} />
