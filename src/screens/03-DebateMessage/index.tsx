@@ -70,16 +70,25 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
    const [activeSectionId, setActiveSectionId] = React.useState(sections[0].id);
    const bodyRef = React.useRef<HTMLElement | null>(null);
 
+   // React.useEffect(() => {
+   //    const saved = sessionStorage.getItem("debate-full-message");
+
+   //    if (!saved) {
+   //       router.push("/debate");
+   //       return;
+   //    }
+
+   //    setData(JSON.parse(saved));
+   // }, [router]);
+
    React.useEffect(() => {
-      const saved = sessionStorage.getItem("debate-full-message");
-
-      if (!saved) {
-         router.push("/debate");
-         return;
-      }
-
-      setData(JSON.parse(saved));
-   }, [router]);
+   setData({
+      aiName: "GPT",
+      aiAvatar: "/images/ai/chatgpt-icon.png",
+      title: "AI will replace middle management within 3 years",
+      round: "R1",
+   });
+}, []);
 
    const handleScrollTo = (id: string) => {
       const container = bodyRef.current;
@@ -99,7 +108,7 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
       });
    };
 
-   if (!data) return null;
+   if (!data) return <div>Loading...</div>;
 
    const round = data.round === "R1" ? "Round 1" : data.round === "R2" ? "Round 2" : data.round;
 
