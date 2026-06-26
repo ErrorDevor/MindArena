@@ -1,3 +1,12 @@
+export type DebateFinal = {
+   opportunityScore: number;
+   childQuestions: string[];
+   researchGaps: string[];
+   crossDomainHypotheses: string[];
+   profitPatterns: string[];
+   fundingBranches: string[];
+};
+
 export type DebateAttack = {
    eventId: string;
    roundNumber: number;
