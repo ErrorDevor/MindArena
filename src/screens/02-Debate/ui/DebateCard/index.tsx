@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 import clsx from "clsx";
+import { splitTextIntoParagraphs } from "screens/02-Debate/lib/splitText";
 
 import Image from "shared/ui/base/Image";
 import { UserInfo } from "shared/ui/components/UserInfo";
@@ -74,6 +75,10 @@ export const DebateCard: React.FC<DebateCardProps> = ({
       router.push("/message");
    };
 
+   const paragraphs = React.useMemo(() => {
+      return splitTextIntoParagraphs(text, 2);
+   }, [text]);
+
    return (
       <article className={clsx(css.card, css[variant], className ?? "")}>
          <header className={css.header}>
@@ -109,7 +114,17 @@ export const DebateCard: React.FC<DebateCardProps> = ({
 
          <div className={css.body}>
             <p ref={textRef} className={`${css.text} ${isExpanded ? css.text_expanded : ""}`}>
-               {text}
+               {paragraphs.map((paragraph, index) => (
+                  <React.Fragment key={index}>
+                     {paragraph}
+                     {index < paragraphs.length - 1 && (
+                        <>
+                           <br />
+                           <br />
+                        </>
+                     )}
+                  </React.Fragment>
+               ))}
             </p>
 
             {hasOverflow && (
