@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+!.env.example
+.pytest_cache/
+
+# Внутреннее — НЕ отдаём бэкендеру: локальное демо, диагностические скрипты, логи
+demo/
+scripts/
+logs/

@@ -1,0 +1,14 @@
+# В образ не попадают секреты, окружение, локальное демо и мусор
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.example
+.pytest_cache/
+demo/
+scripts/
+logs/
+*.md
+.gitignore
+Dockerfile
+.dockerignore
