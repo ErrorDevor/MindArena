@@ -48,7 +48,6 @@
 }
 
 .main_block {
-   // padding: 2.5rem 4.4rem;
    padding-right: 2rem;
 
    &_top {
@@ -138,6 +137,7 @@
    border: 0.1rem solid rgba(0, 0, 0, 0.1);
    padding: 0.8rem 1.2rem;
    cursor: pointer;
+   max-height: 2.8rem;
    @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(1));
 
    &_color_block {
@@ -153,131 +153,5 @@
    p {
       font-size: 1.2rem;
       color: getColorBlack(1);
-   }
-}
-
-/*Nav*/
-.buttons_nav {
-   position: relative;
-   display: flex;
-   align-items: center;
-   gap: 0.8rem;
-   margin-top: 3.2rem;
-   padding-bottom: 1.6rem;
-   border-bottom: 0.1rem solid rgba(0, 0, 0, 0.1);
-}
-
-.button_nav {
-   position: relative;
-   height: 3.6rem;
-   overflow: visible !important;
-
-   &_active {
-      &::after {
-         content: "";
-         position: absolute;
-         left: 0;
-         bottom: -1.9rem;
-         width: 100%;
-         height: 0.3rem;
-         background: getColorBlack(1);
-         border-radius: 10rem;
-         box-shadow: 0 2px 4px rgba(9, 12, 10, 0.25);
-      }
-   }
-}
-
-/*Final*/
-.final_block {
-   margin-top: 2.4rem;
-   display: flex;
-   flex-direction: column;
-   gap: 2rem;
-}
-
-.final_section {
-   h4 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.8rem;
-      color: getColorBlack(0.7);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-   }
-
-   ul {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      padding-left: 1.6rem;
-   }
-
-   li {
-      font-size: 1.3rem;
-      line-height: 1.5;
-      color: getColorBlack(0.9);
-   }
-
-   p {
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: getColorBlack(1);
-   }
-}
-
-/*Main*/
-.main_list {
-   display: flex;
-   flex-direction: column;
-   gap: 1.2rem;
-   padding: 1.6rem 0;
-
-   &_raunds,
-   &_ai_cards,
-   &_card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.8rem;
-      width: 100%;
-   }
-
-   &_ai_cards {
-      gap: 0.8rem;
-   }
-
-}
-
-.status_label {
-   display: flex;
-   align-items: center;
-   gap: 0.8rem;
-   width: 100%;
-
-   &_item {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-
-      p {
-         flex-wrap: nowrap;
-         @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
-      }
-
-      svg {
-         width: 1.4rem;
-         stroke: getColorBlack(0.5);
-      }
-   }
-
-   &_progress {
-      display: flex;
-      align-items: center;
-      flex-wrap: nowrap;
-      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
-
-      span {
-         color: getColorBlack(1);
-      }
    }
 }

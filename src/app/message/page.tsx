@@ -23,7 +23,7 @@ export default function DebateMessagePage() {
             />
          }
          isComments={false}
-         ispromptArea={false}
+         isPromptArea={false}
       >
          <DebateMessage />
       </AppLayout>

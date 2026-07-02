@@ -20,6 +20,12 @@ export type DebateAttack = {
    };
 };
 
+export type TabItem = {
+   id: string;
+   tab: string;
+   href: string;
+};
+
 // Mock Types
 export type CardType = {
    id: string;

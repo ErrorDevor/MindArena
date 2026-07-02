@@ -1,0 +1,92 @@
+.final_block {
+   margin-top: 2.4rem;
+   display: flex;
+   flex-direction: column;
+   gap: 2rem;
+}
+
+.final_section {
+   h4 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: getColorBlack(0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+   }
+
+   ul {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-left: 1.6rem;
+   }
+
+   li {
+      font-size: 1.3rem;
+      line-height: 1.5;
+      color: getColorBlack(0.9);
+   }
+
+   p {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: getColorBlack(1);
+   }
+}
+
+/*Main*/
+.main_list {
+   display: flex;
+   flex-direction: column;
+   gap: 1.2rem;
+   padding: 1.6rem 0;
+
+   &_raunds,
+   &_ai_cards,
+   &_card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+   }
+
+   &_ai_cards {
+      gap: 0.8rem;
+   }
+}
+
+.status_label {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+   width: 100%;
+
+   &_item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+
+      p {
+         flex-wrap: nowrap;
+         @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
+      }
+
+      svg {
+         width: 1.4rem;
+         stroke: getColorBlack(0.5);
+      }
+   }
+
+   &_progress {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(0.5));
+
+      span {
+         color: getColorBlack(1);
+      }
+   }
+}

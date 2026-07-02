@@ -29,7 +29,6 @@ export default  function Home() {
                onToggleCollapsed={() => setCollapsed((prev) => !prev)}
             />
          }
-         // commentsSidebar={<CommentsSidebar />}
          promptArea={<PromptArea />}
          isComments={false}
       >
