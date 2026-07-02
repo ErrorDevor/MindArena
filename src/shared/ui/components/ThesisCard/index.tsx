@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-
+import { ReactNode } from "react";
 import clsx from "clsx";
 
 import { ArrowDotIcon } from "shared/ui/icons";
@@ -12,7 +12,7 @@ export type ThesisCardVariant = "before" | "after" | "original" | "current";
 
 interface Prop {
    title: string;
-   text: string;
+   text: string | ReactNode;
    variant: ThesisCardVariant;
    className?: string;
    simple?: boolean;

@@ -1,0 +1,178 @@
+.path_item {
+   display: flex;
+   align-items: flex-start;
+   gap: 1.6rem;
+   padding: 2rem;
+   min-height: 15.2rem;
+   background: rgba(255, 255, 255, 0.3);
+   border: 0.1rem solid #fff;
+   box-shadow: 0 0.1rem 0.2rem 0.1rem rgba(0, 0, 0, 0.04);
+   border-radius: 1.8rem;
+}
+
+.path_number {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 3.2rem;
+   height: 3.2rem;
+   flex: 0 0 3.2rem;
+   border: 0.1rem solid rgba(61, 130, 222, 0.4);
+   border-radius: 1rem;
+   background: linear-gradient(138.77deg, #b5d1ff 2.29%, #ffffff 92.81%);
+   @include fontInterTight(1.4rem, 1, 0, 500, getColorAccent(1));
+}
+
+.path_content {
+   display: flex;
+   flex-direction: column;
+   gap: 1.6rem;
+   width: 100%;
+   padding-top: 0.4rem;
+
+   h5 {
+      @include fontInterTight(1.4rem, 1.2, -0.01em, 500, getColorBlack(1));
+   }
+}
+
+.path_info {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 2rem;
+}
+
+.path_meta {
+   display: flex;
+   align-items: center;
+   gap: 0.6rem;
+
+   span {
+      @include fontInterTight(1.2rem, 1, -0.01em, 400, getColorBlack(1));
+   }
+}
+
+.dot {
+   width: 0.3rem;
+   height: 0.3rem;
+   border-radius: 50%;
+   background: #090c0a;
+}
+
+.progress {
+   position: relative;
+   width: 7.2rem;
+   height: 0.6rem;
+   overflow: hidden;
+   border-radius: 10rem;
+   background: rgba(9, 12, 10, 0.05);
+}
+
+.progress_line {
+   position: absolute;
+   left: 0.1rem;
+   top: 50%;
+   height: 0.4rem;
+   transform: translateY(-50%);
+   border-radius: 10rem;
+}
+
+.progress_green {
+   background: linear-gradient(90deg, #91ffdb 0%, #00bc7f 100%);
+}
+
+.progress_orange {
+   background: orange;
+}
+
+.progress_blue {
+   background: linear-gradient(90deg, #b5d1ff 0%, #1683ff 100%);
+}
+
+.models_list {
+   display: flex;
+   align-items: center;
+   gap: 0.4rem;
+}
+
+/**/
+.model_item {
+   display: flex;
+   align-items: center;
+   gap: 0.6rem;
+   padding: 0.4rem 0.6rem;
+   border: 0.1rem solid rgba(15, 89, 25, 0.4);
+   border-radius: 1.2rem;
+   background: rgba(15, 89, 25, 0.1);
+   cursor: pointer;
+   @include transition((background));
+
+   &:hover {
+      background: rgba(15, 89, 25, 0.15);
+   }
+
+   img {
+      width: 1.4rem;
+      height: 1.4rem;
+      border-radius: 50%;
+   }
+
+   svg {
+      flex-shrink: 0;
+      width: 1.4rem;
+      height: 1.4rem;
+      stroke: #0F5919;
+   }
+
+   span {
+      @include fontInterTight(1.2rem, 1, -0.01em, 500, getColorBlack(1));
+   }
+}
+
+.model_item_failed {
+   border-color: rgba(200, 23, 52, 0.35);
+   background: rgba(200, 23, 52, 0.08);
+
+   svg {
+      flex-shrink: 0;
+      width: 1.4rem;
+      height: 1.4rem;
+      stroke: #C81734;
+   }
+
+   &:hover {
+      background: rgba(200, 23, 52, 0.14);
+   }
+}
+
+.path_divider {
+   width: 100%;
+   height: 0.1rem;
+   background: rgba(0, 0, 0, 0.05);
+}
+
+.path_actions {
+   display: flex;
+   align-items: center;
+   gap: 0.8rem;
+}
+
+.path_button {
+   height: 3.6rem;
+   color: getColorBlack(1);
+
+   svg {
+      width: 1rem;
+      fill: getColorBlack(1);
+      transform: rotate(45deg);
+   }
+}
+
+.build_button {
+   height: 3.6rem;
+
+   svg {
+      width: 1.6rem;
+      stroke: getColorWhite(1);
+   }
+}

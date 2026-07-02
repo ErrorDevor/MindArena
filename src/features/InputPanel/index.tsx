@@ -21,7 +21,7 @@ import css from "./InputPanel.module.scss";
 
 interface Prop {
    className?: string;
-   variant?: "main" | "debate";
+   variant?: "main" | "debate" | "quantum";
 }
 
 export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
@@ -32,9 +32,11 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
    const [inputValue, setInputValue] = useState("");
 
    const placeholder =
-      variant !== "main"
-         ? "Write your opinion, fact or example...."
-         : "Write a thesis or open question — mode detected automatically….";
+      variant === "main"
+         ? "Write a thesis or open question — mode detected automatically…."
+         : variant === "debate"
+           ? "Write your opinion, fact or example...."
+           : "Your hypothesis...";
 
    const ensureAuth = async () => {
       const authData = await login({
@@ -114,7 +116,9 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
    return (
       <div className={clsx(css.input_panel, className)}>
          <div className={css.input_panel_inner}>
-            <AiStack items={[aiModels[0], aiModels[1], aiModels[2], aiModels[3]]} />
+            {variant !== "quantum" && (
+               <AiStack items={[aiModels[0], aiModels[1], aiModels[2], aiModels[3]]} />
+            )}
 
             <textarea
                placeholder={placeholder}
@@ -144,7 +148,7 @@ export const InputPanel: React.FC<Prop> = ({ className, variant = "main" }) => {
 };
 
 interface ButtonSendProp {
-   variant?: "main" | "debate";
+   variant?: "main" | "debate" | "quantum";
    onSend?: () => void;
 }
 
@@ -152,71 +156,81 @@ const ButtonSend: React.FC<ButtonSendProp> = ({ variant = "main", onSend }) => {
    const sendTokenRef = React.useRef<HTMLDivElement | null>(null);
    const [isTooltipOpen, setIsTooltipOpen] = React.useState(false);
 
+   if (variant === "main") {
+      return (
+         <button className={css.send_button} onClick={onSend}>
+            <SendIcon />
+
+            <svg
+               className={css.star}
+               width="4"
+               height="4"
+               viewBox="0 0 4 4"
+               fill="none"
+               xmlns="http://www.w3.org/2000/svg"
+            >
+               <path
+                  d="M2 0C2.0679 1.07519 2.9248 1.9321 4 2C2.9248 2.0679 2.0679 2.9248 2 4C1.9321 2.9248 1.07519 2.0679 0 2C1.07519 1.9321 1.9321 1.07519 8 0Z"
+                  fill="white"
+               />
+            </svg>
+
+            <svg
+               className={css.stars}
+               width="10"
+               height="10"
+               viewBox="0 0 10 10"
+               fill="none"
+               xmlns="http://www.w3.org/2000/svg"
+            >
+               <path
+                  d="M4 2C4.1358 4.15038 5.8496 5.86421 8 6C5.8496 6.1358 4.1358 7.8496 4 10C3.86421 7.8496 2.15038 6.1358 0 6C2.15038 5.86421 3.86421 4.15038 4 2Z"
+                  fill="white"
+               />
+               <path
+                  d="M8 0C8.0679 1.07519 8.9248 1.9321 10 2C8.9248 2.0679 8.0679 2.9248 8 4C7.9321 2.9248 7.07519 2.0679 6 2C7.07519 1.9321 7.9321 1.07519 8 0Z"
+                  fill="white"
+               />
+            </svg>
+         </button>
+      );
+   }
+
+   if (variant === "quantum") {
+      return (
+         <Button variant="blue" className={css.send_token_button} onClick={onSend}>
+            + 5 Tokens <TokenIcon />
+         </Button>
+      );
+   }
+
    return (
       <>
-         {variant === "main" ? (
-            <button className={css.send_button} onClick={onSend}>
+         <div className={css.button_block}>
+            <Button variant="black" className={css.post_button} onClick={onSend}>
                <SendIcon />
+               Post
+            </Button>
 
-               <svg
-                  className={css.star}
-                  width="4"
-                  height="4"
-                  viewBox="0 0 4 4"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-               >
-                  <path
-                     d="M2 0C2.0679 1.07519 2.9248 1.9321 4 2C2.9248 2.0679 2.0679 2.9248 2 4C1.9321 2.9248 1.07519 2.0679 0 2C1.07519 1.9321 1.9321 1.07519 8 0Z"
-                     fill="white"
-                  />
-               </svg>
+            <p>or</p>
 
-               <svg
-                  className={css.stars}
-                  width="10"
-                  height="10"
-                  viewBox="0 0 10 10"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-               >
-                  <path
-                     d="M4 2C4.1358 4.15038 5.8496 5.86421 8 6C5.8496 6.1358 4.1358 7.8496 4 10C3.86421 7.8496 2.15038 6.1358 0 6C2.15038 5.86421 3.86421 4.15038 4 2Z"
-                     fill="white"
-                  />
-                  <path
-                     d="M8 0C8.0679 1.07519 8.9248 1.9321 10 2C8.9248 2.0679 8.0679 2.9248 8 4C7.9321 2.9248 7.07519 2.0679 6 2C7.07519 1.9321 7.9321 1.07519 8 0Z"
-                     fill="white"
-                  />
-               </svg>
-            </button>
-         ) : (
-            <div className={css.button_block}>
-               <Button variant="black" className={css.post_button} onClick={onSend}>
-                  <SendIcon />
-                  Post
+            <div
+               ref={sendTokenRef}
+               onMouseEnter={() => setIsTooltipOpen(true)}
+               onMouseLeave={() => setIsTooltipOpen(false)}
+            >
+               <Button variant="blue" className={css.send_token_button}>
+                  Send - 5
+                  <TokenIcon />
                </Button>
-
-               <p>or</p>
-
-               <div
-                  ref={sendTokenRef}
-                  onMouseEnter={() => setIsTooltipOpen(true)}
-                  onMouseLeave={() => setIsTooltipOpen(false)}
-               >
-                  <Button variant="blue" className={css.send_token_button}>
-                     Send - 5
-                     <TokenIcon />
-                  </Button>
-               </div>
-
-               <Tooltip
-                  anchorRef={sendTokenRef}
-                  isOpen={isTooltipOpen}
-                  text="Your argument will enter the next round. AI will respond to it directly."
-               />
             </div>
-         )}
+
+            <Tooltip
+               anchorRef={sendTokenRef}
+               isOpen={isTooltipOpen}
+               text="Your argument will enter the next round. AI will respond to it directly."
+            />
+         </div>
       </>
    );
 };

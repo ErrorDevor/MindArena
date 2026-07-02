@@ -1,7 +1,9 @@
 import { default as ArrowIcon } from "./Arrow.icon";
 import { default as ArrowDotIcon } from "./ArrowDot.icon";
+import { default as CheckIcon } from "./Check.icon";
 import { default as CheckDoneIcon } from "./CheckDone.icon";
 import { default as ClockIcon } from "./Clock.icon";
+import { default as CloseIcon } from "./Close.icon";
 import { default as DropdownArrowIcon } from "./DropdownArrow.icon";
 import { default as ExchangeIcon } from "./Exchange.icon";
 import { default as FeedIcon } from "./Feed.icon";
@@ -34,4 +36,6 @@ export {
    MessageIcon,
    TokenIcon,
    ArrowIcon,
+   CheckIcon,
+   CloseIcon,
 };

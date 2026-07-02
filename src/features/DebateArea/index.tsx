@@ -6,10 +6,10 @@ import clsx from "clsx";
 
 import { InputPanel } from "features/InputPanel";
 
+import Image from "shared/ui/base/Image";
 import { ArrowDotIcon } from "shared/ui/icons";
 
 import css from "./DebateArea.module.scss";
-import Image from "shared/ui/base/Image";
 
 interface Prop {
    className?: string;
@@ -18,7 +18,7 @@ interface Prop {
 export const DebateArea: React.FC<Prop> = ({ className }) => {
    return (
       <div className={clsx(css.debate_area, className)}>
-         <InputPanel variant="debate"className={css.debate_input} />
+         <InputPanel variant="debate" className={css.debate_input} />
 
          <div className={css.debate_area_bottom}>
             Verified experts free in their field <span className={css.dot} /> 5 supporters
@@ -39,7 +39,7 @@ export const DebateArea: React.FC<Prop> = ({ className }) => {
             Free <span className={css.dot} />
             or $0.20 immediately
             <div className={css.tokens_count}>
-               <Image.Default src="/icons/flash-circle.svg"/>
+               <Image.Default src="/icons/flash-circle.svg" />
                <p>0 / 280</p>
                <span className={css.dot} />
                <p>5 tokens</p>
