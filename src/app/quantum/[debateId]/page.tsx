@@ -2,18 +2,16 @@
 
 import React from "react";
 
-import { DebateScreen } from "screens/02-Debate/ui/DebateContent";
+import { Quantum } from "screens/04-Quantum";
 
 import { Header } from "widgets/Header";
 import { Sidebar } from "widgets/Sidebar";
 
-import { DebateArea } from "features/DebateArea";
+import { QuantumArea } from "features/QuantumArea";
 
 import { AppLayout } from "shared/ui/templates/AppLayout";
 
-export const dynamic = "force-dynamic";
-
-export default function Home() {
+export default function QuantumPage() {
    const [collapsed, setCollapsed] = React.useState(false);
 
    return (
@@ -26,10 +24,10 @@ export default function Home() {
                onToggleCollapsed={() => setCollapsed((prev) => !prev)}
             />
          }
-         promptArea={<DebateArea />}
          isComments={false}
+         promptArea={<QuantumArea />}
       >
-         <DebateScreen />
+         <Quantum />
       </AppLayout>
    );
 }

@@ -73,8 +73,20 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
    React.useEffect(() => {
       const saved = sessionStorage.getItem("debate-full-message");
 
+      // if (!saved) {
+      //    router.push("/debate");
+      //    return;
+      // }
+
       if (!saved) {
-         router.push("/debate");
+         setData({
+            aiName: "GPT",
+            aiAvatar: "/images/ai/chatgpt-icon.png",
+            round: "R1",
+            title: "AI will replace middle management within 3 years",
+            text: "Test attack summary text for message page.",
+         });
+
          return;
       }
 
@@ -100,8 +112,6 @@ export const DebateMessage: React.FC<Prop> = ({ className }) => {
    };
 
    if (!data) return <div>Loading...</div>;
-
-   const round = data.round === "R1" ? "Round 1" : data.round === "R2" ? "Round 2" : data.round;
 
    return (
       <div className={clsx(css.debate_message, className)}>
