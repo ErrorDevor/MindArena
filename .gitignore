@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 mindarena_deploy
 mindarena_deploy.pub
+
+/docs/
+/mind_arena_tz_final_3.md
