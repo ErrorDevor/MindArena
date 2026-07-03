@@ -31,12 +31,38 @@ def _pick_lead(registry: dict[str, LLMProvider]) -> LLMProvider | None:
     return next(iter(registry.values()), None)
 
 
-async def _safe_generate(provider: LLMProvider, messages: list[LLMMessage], **kw) -> tuple[str | None, str | None]:
+async def _safe_generate(provider: LLMProvider, messages: list[LLMMessage], *,
+                         timeout: float | None = None, **kw) -> tuple[str | None, str | None]:
     try:
-        res = await provider.generate(messages, **kw)
+        coro = provider.generate(messages, **kw)
+        res = await (asyncio.wait_for(coro, timeout) if timeout else coro)
         return (res.text or "").strip(), None
     except Exception as e:  # noqa: BLE001
         return None, f"{type(e).__name__}: {e}"
+
+
+_PROMPT_ECHO = ("сформулируй", "верни строго json", "верни json", "исходный тезис:", "текущая версия:")
+
+
+def _valid_attack(text: str | None) -> bool:
+    """Отсеиваем мусор: пустой/слишком короткий ответ или эхо инструкции промпта."""
+    t = (text or "").strip()
+    if len(t) < 40:
+        return False
+    head = t.lower()[:80]
+    return not any(p in head for p in _PROMPT_ECHO)
+
+
+def _is_repeat(text: str, prior: list[str], thresh: float = 0.6) -> bool:
+    """Грубая проверка повтора по пересечению слов (без эмбеддингов — это V2)."""
+    nw = set(text.lower().split())
+    if not nw:
+        return True
+    for p in prior:
+        pw = set(p.lower().split())
+        if pw and len(nw & pw) / max(len(nw), 1) > thresh:
+            return True
+    return False
 
 
 async def run_verify(
@@ -87,7 +113,10 @@ async def run_verify(
         try:
             for fut in asyncio.as_completed(tasks, timeout=timeout):
                 agent_id, role, text, err = await fut
-                if err or not text:
+                if err or not _valid_attack(text):
+                    continue
+                # не пускаем переформулировку уже закрытой атаки или дубль в этом раунде
+                if _is_repeat(text, anchor.closed + [a["content"] for a in attacks]):
                     continue
                 attack_id = str(uuid.uuid4())
                 attacks.append({"attackId": attack_id, "agent": agent_id, "role": role["name"], "content": text})
@@ -110,7 +139,7 @@ async def run_verify(
         # 2) УЛУЧШЕНИЕ — редактор переписывает тезис (3 блока)
         imp_text, imp_err = await _safe_generate(
             lead, prompts.improve_messages(anchor, [a["content"] for a in attacks], locale, mode),
-            max_tokens=1200, json_mode=True,
+            max_tokens=1200, json_mode=True, timeout=timeout,
         )
         imp = parse_json(imp_text) or {}
         new_thesis = (imp.get("thesis") or "").strip()
@@ -131,7 +160,7 @@ async def run_verify(
         async def _verify(a: dict):
             text, err = await _safe_generate(
                 registry[a["agent"]], prompts.verify_own_messages(anchor.current, a["content"], locale),
-                max_tokens=200, json_mode=True,
+                max_tokens=200, json_mode=True, timeout=timeout,
             )
             verdict = (parse_json(text) or {}).get("verdict", "partial") if not err else "partial"
             return a, verdict if verdict in ("closed", "partial", "open") else "partial"
@@ -184,7 +213,7 @@ async def run_verify(
     )
     fin_text, _ = await _safe_generate(
         lead, prompts.final_messages(thesis, anchor.current, summary, locale, mode),
-        max_tokens=1500, json_mode=True,
+        max_tokens=1500, json_mode=True, timeout=timeout,
     )
     final = _normalize_final(parse_json(fin_text), anchor.current)
     yield "debate.completed", {"debateId": debate_id, "thesis": anchor.current, "final": final}

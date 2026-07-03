@@ -469,13 +469,15 @@ def _engine_stream(debate_id, thesis, mode, strategy, models, registry, locale, 
 # --- Дебат через ОПРОС (для браузеров, где SSE-поток буферизуется) ---
 # Дебат крутится в фоне и копит события; фронт забирает их по debateId батчами (GET ?since=N).
 # Не зависит от буферизации потока и от живости соединения.
+# Кэш активных/недавних дебатов. Персистентность и история — на стороне бэкенда (он релеит и хранит события).
 _DEBATES: dict[str, dict] = {}
-_DEBATE_TTL = 900
+_DEBATE_TTL = 3600
 
 
 def _gc_debates() -> None:
+    # Выселяем ТОЛЬКО завершённые дебаты; активные не трогаем никогда.
     now = time.time()
-    for k in [k for k, v in _DEBATES.items() if now - v["ts"] > _DEBATE_TTL]:
+    for k in [k for k, v in _DEBATES.items() if v.get("done") and now - v["ts"] > _DEBATE_TTL]:
         _DEBATES.pop(k, None)
 
 
