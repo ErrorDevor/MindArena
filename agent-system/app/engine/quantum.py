@@ -73,7 +73,7 @@ async def run_quantum(
             for fut in asyncio.as_completed(tasks, timeout=timeout):
                 agent_id, ideas = await fut
                 for idea in ideas:
-                    if not isinstance(idea, str) or not idea.strip():
+                    if not isinstance(idea, str) or len(idea.strip()) < 12:
                         continue
                     bid = uuid.uuid4().hex[:8]
                     b = {"id": bid, "text": idea.strip(), "agent": agent_id, "generation": gen, "score": 0}
@@ -95,7 +95,7 @@ async def run_quantum(
         # 2) ОЦЕНКА — ведущая модель, один проход по всем веткам поколения
         score_text, _ = await _safe_generate(
             lead, prompts.quantum_score_messages(thesis, branches, locale),
-            max_tokens=1400, json_mode=True,
+            max_tokens=1400, json_mode=True, timeout=timeout,
         )
         scores = {
             s.get("id"): s for s in (parse_json(score_text) or {}).get("scores", [])
