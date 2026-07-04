@@ -1,6 +1,11 @@
-"""Промпты движков: intake, baseline, VERIFY (attack/improve/verify/final), QUANTUM."""
+"""Промпты движков: intake, classify, baseline, VERIFY (attack/improve/verify/final), QUANTUM, inject.
+
+Тексты системных промптов живут в app/prompt_registry.py (дефолты в коде, переопределения по
+PROMPTS_URL). Здесь — сборка сообщений с подстановкой переменных.
+"""
 from __future__ import annotations
 
+from app import prompt_registry as reg
 from app.engine.memory import Anchor
 from app.providers.base import LLMMessage
 
@@ -11,107 +16,53 @@ def _lang(locale: str) -> str:
     return _LANG.get(locale, "русском")
 
 
-# Режимы дебата (ТЗ Часть 4). Разная логика атаки / синтеза / финала.
-_MODE_ATTACK = {
-    "CONVERGENT": "Режим: сходимся к более сильной версии. Дай конкретную дыру, которую можно закрыть.",
-    "DIVERGENT": "Режим: единого верного ответа нет. Вскрой ПРИНЦИПИАЛЬНОЕ противоречие или несовместимую "
-                 "позицию — то, что нельзя примирить простым уточнением.",
-    "GEOPOLITICAL": "Режим: у сторон разные цели. Выступай как носитель КОНКРЕТНОГО интереса и бей с его "
-                    "логики, не притворяясь нейтральным.",
-}
-_MODE_IMPROVE = {
-    "CONVERGENT": "Перепиши тезис СИЛЬНЕЕ, закрыв сильнейшие атаки.",
-    "DIVERGENT": "НЕ своди к одному ответу. Уточни формулировку ЯДРА ПРОТИВОРЕЧИЯ: где именно и почему "
-                 "расходятся позиции. В поле thesis — точная формулировка этой развилки.",
-    "GEOPOLITICAL": "Не выбирай победителя. В поле thesis — текущий баланс интересов сторон.",
-}
-_MODE_FINAL = {
-    "CONVERGENT": "Вывод (conclusion): тезис ДО → ПОСЛЕ, что закрыто, какие риски остались.",
-    "DIVERGENT": "Вывод (conclusion): несовместимые позиции, точка расхождения, почему консенсус невозможен.",
-    "GEOPOLITICAL": "Вывод (conclusion): что получится при каждом выборе и какие потери у каждой стороны.",
-}
+def _mode_key(prefix: str, mode: str) -> str:
+    m = (mode or "CONVERGENT").upper()
+    key = f"{prefix}.mode.{m}"
+    return key if key in reg.DEFAULTS else f"{prefix}.mode.CONVERGENT"
 
 
-def _mode(d: dict, mode: str) -> str:
-    return d.get((mode or "CONVERGENT").upper(), d["CONVERGENT"])
-
-
-# Как приёмщик ведёт юзера в зависимости от выбранного типа дебата.
-_INTAKE_MODE = {
-    "CONVERGENT": "Выбран режим Verify · Convergent — проверяем КОНКРЕТНЫЙ тезис и ищем более сильную "
-                  "версию. Помоги сформулировать чёткое проверяемое утверждение.",
-    "DIVERGENT": "Выбран режим Verify · Divergent — по спорной теме строим КАРТУ ПРОТИВОРЕЧИЙ (единого "
-                 "ответа нет). Помоги задать спорный вопрос с явным напряжением сторон.",
-    "GEOPOLITICAL": "Выбран режим Verify · Geopolitical — разбираем тему с позиций РАЗНЫХ сторон/интересов. "
-                    "Помоги задать тему, где у сторон разные цели.",
-    "QUANTUM": "Выбран режим Quantum (Explore) — ПЕРЕБИРАЕМ и отбираем идеи по ОТКРЫТОЙ теме/области. "
-               "НЕ требуй острый тезис — достаточно ясной области или открытого вопроса для генерации идей.",
-}
+def classify_messages(thesis: str, locale: str = "ru") -> list[LLMMessage]:
+    """Классификатор режима (ТЗ Блок H2/I2, Часть 4): Verify/Quantum + подтип + уверенность."""
+    return [
+        LLMMessage("system", reg.get("classify.system")),
+        LLMMessage("user", f"ТЕМА/ВОПРОС: {thesis}"),
+    ]
 
 
 def intake_messages(history: list[LLMMessage], locale: str = "ru",
                     strategy: str = "VERIFY", mode: str = "CONVERGENT") -> list[LLMMessage]:
-    """Приёмщик: модель ведёт юзера и согласует тему ДО запуска дебата, с учётом выбранного режима.
-
-    history — весь диалог приёмщика (роли user/assistant), последний ход — от пользователя.
-    Память = эта история (её передаёт бэкенд), сам сервис состояние не хранит.
-    """
+    """Приёмщик: модель ведёт юзера и согласует тему ДО запуска дебата, с учётом выбранного режима."""
     type_key = "QUANTUM" if (strategy or "").upper() == "QUANTUM" else (mode or "CONVERGENT").upper()
-    mode_ctx = _INTAKE_MODE.get(type_key, _INTAKE_MODE["CONVERGENT"])
-    system = (
-        "Ты — дружелюбный ассистент-приёмщик платформы, где консилиум из нескольких ИИ ведёт дебаты "
-        "по теме пользователя. Твоя задача — ДО запуска дебата помочь человеку сформулировать тему и "
-        "согласовать её.\n"
-        f"РЕЖИМ ДЕБАТА: {mode_ctx}\n"
-        "Правила:\n"
-        "1) Если пользователь поздоровался, написал расплывчато или не по делу — дебат НЕ запускаем. "
-        "Вежливо и по-человечески уточни, что он хочет обсудить, предложи направление с учётом режима.\n"
-        "2) Веди человека: задавай ОДИН конкретный уточняющий вопрос за раз, помогай сузить до темы.\n"
-        "3) Сохраняй формулировку пользователя близко к оригиналу (в поле thesis). Кратко подтверди тему "
-        "своими словами и спроси согласие. Ставь ready=true ТОЛЬКО когда пользователь подтвердил.\n"
-        f"4) Пиши на {_lang(locale)} языке, тон живой и дружелюбный, без канцелярита, коротко.\n"
-        "5) ВАЖНО: поле message — это ТОЛЬКО живой текст для человека. НИКАКОГО кода, имён переменных/полей, "
-        "присваиваний, JSON или markdown ВНУТРИ message. Формулировку темы клади в отдельное поле thesis.\n"
-        "Верни СТРОГО JSON без markdown-обёрток по схеме:\n"
-        '{"ready": true|false, '
-        '"message": "живой текст пользователю — уточняющий вопрос ИЛИ подтверждение перед запуском", '
-        '"thesis": "согласованная формулировка темы (пусто, если ещё не ясна)"}'
-    )
+    mode_ctx = reg.get(f"intake.mode.{type_key}" if f"intake.mode.{type_key}" in reg.DEFAULTS
+                       else "intake.mode.CONVERGENT")
+    system = reg.get("intake.system", mode_ctx=mode_ctx, lang=_lang(locale))
     return [LLMMessage("system", system), *history]
 
 
 def baseline_messages(thesis: str, locale: str = "ru") -> list[LLMMessage]:
-    """Наивный «один промпт» — то, с чем сравниваем результат консилиума (ТЗ Часть 1).
-
-    Одна модель, один проход, без критики и без раундов — как обычный чат-ответ.
-    """
-    system = (
-        "Ты — обычная одиночная модель, отвечающая в один проход, без консилиума и без раундов критики. "
-        "Дай свой лучший ответ на тезис: оцени, верен ли он, и сформулируй итоговую позицию. "
-        f"Кратко и по существу (4–7 предложений). Пиши на {_lang(locale)} языке."
-    )
-    user = f"ТЕЗИС: {thesis}\n\nТвой ответ одним проходом:"
-    return [LLMMessage("system", system), LLMMessage("user", user)]
+    """Наивный «один промпт» — то, с чем сравниваем результат консилиума (ТЗ Часть 1)."""
+    system = reg.get("baseline.system", lang=_lang(locale))
+    return [LLMMessage("system", system), LLMMessage("user", f"ТЕЗИС: {thesis}\n\nТвой ответ одним проходом:")]
 
 
 def attack_messages(anchor: Anchor, role: dict[str, str], locale: str = "ru", mode: str = "CONVERGENT") -> list[LLMMessage]:
-    system = (
-        f"Ты — {role['name']}, участник консилиума из нескольких ИИ. Вы жёстко разбираете тезис "
-        f"по схеме «критикуй и улучшай». {_mode(_MODE_ATTACK, mode)} Твоя линза атаки: {role['lens']} "
-        f"Атакуй ТОЛЬКО с этой стороны. Дай ОДНУ конкретную новую дыру в ТЕКУЩЕЙ версии тезиса, "
-        f"не повторяя уже закрытые атаки. Коротко (2–4 предложения), по существу, без воды. "
-        f"Пиши на {_lang(locale)} языке."
+    system = reg.get(
+        "attack.system",
+        role_name=role["name"], lens=role["lens"],
+        mode_rule=reg.get(_mode_key("attack", mode)), lang=_lang(locale),
     )
     user = anchor.render() + "\n\nСформулируй одну новую конкретную атаку на текущую версию."
     return [LLMMessage("system", system), LLMMessage("user", user)]
 
 
-def improve_messages(anchor: Anchor, attacks: list[str], locale: str = "ru", mode: str = "CONVERGENT") -> list[LLMMessage]:
-    system = (
-        "Ты — редактор-синтезатор консилиума. Переработай тезис с учётом сильнейших атак. "
-        f"{_mode(_MODE_IMPROVE, mode)} "
-        "Засчитывается ТОЛЬКО содержательное изменение (НЕ «стал длиннее/осторожнее»). "
-        f"Пиши на {_lang(locale)} языке. Верни СТРОГО JSON."
+def improve_messages(anchor: Anchor, attacks: list[str], locale: str = "ru", mode: str = "CONVERGENT",
+                     force_answer: bool = False) -> list[LLMMessage]:
+    system = reg.get(
+        "improve.system",
+        mode_rule=reg.get(_mode_key("improve", mode)),
+        force=reg.get("improve.force") if force_answer else "",
+        lang=_lang(locale),
     )
     atk = "\n".join(f"- {a}" for a in attacks)
     user = (
@@ -127,10 +78,7 @@ def improve_messages(anchor: Anchor, attacks: list[str], locale: str = "ru", mod
 
 def quantum_generate_messages(topic: str, survivors: list[str], n: int, locale: str = "ru") -> list[LLMMessage]:
     """QUANTUM/Explore: сгенерировать n РАЗНЫХ веток-идей по теме (при наличии — развивая выживших)."""
-    system = (
-        "Ты — генератор идей в консилиуме. По теме предложи РАЗНЫЕ, неочевидные, взаимно НЕ дублирующие "
-        f"ветки-гипотезы/подхода. Разброс важнее осторожности. Пиши на {_lang(locale)} языке. Верни СТРОГО JSON."
-    )
+    system = reg.get("quantum.generate.system", lang=_lang(locale))
     base = f"ТЕМА: {topic}\n"
     if survivors:
         base += "ЛУЧШИЕ ВЕТКИ ПРОШЛОГО ПОКОЛЕНИЯ (развей их или скомбинируй, дай НОВЫЕ повороты):\n"
@@ -144,11 +92,7 @@ def quantum_generate_messages(topic: str, survivors: list[str], n: int, locale: 
 
 def quantum_score_messages(topic: str, branches: list[dict], locale: str = "ru") -> list[LLMMessage]:
     """QUANTUM: оценить каждую ветку 0–100 по 5 критериям (ТЗ H4)."""
-    system = (
-        "Ты — независимый оценщик веток. Оцени КАЖДУЮ ветку 0–100 по критериям: новизна, реализуемость, "
-        "масштаб, скрытый спрос, аналогия с успешным прецедентом. Будь дискриминативен — разводи слабые и "
-        f"сильные, не ставь всем одно число. Пиши на {_lang(locale)} языке. Верни СТРОГО JSON."
-    )
+    system = reg.get("quantum.score.system", lang=_lang(locale))
     listing = "\n".join(f'- id={b["id"]}: {b["text"]}' for b in branches)
     user = (
         f"ТЕМА: {topic}\n\nВЕТКИ:\n{listing}\n\n"
@@ -160,24 +104,15 @@ def quantum_score_messages(topic: str, branches: list[dict], locale: str = "ru")
 
 def verify_own_messages(current: str, attack: str, locale: str = "ru") -> list[LLMMessage]:
     """По ТЗ: тот, кто атаковал, сам проверяет — закрыла ли новая версия именно ЕГО атаку."""
-    system = (
-        "Ты — участник консилиума, выдвинувший эту атаку. Проверь ЧЕСТНО и строго, закрывает ли "
-        "ТЕКУЩАЯ версия тезиса именно твою атаку. Вердикт: closed (полностью закрыта), partial "
-        "(частично), open (не закрыта). Не поддавайся — если дыра осталась, ставь open. Верни СТРОГО JSON."
-    )
     user = (
         f"ТВОЯ АТАКА: {attack}\n\nТЕКУЩАЯ ВЕРСИЯ ТЕЗИСА: {current}\n\n"
         'Верни JSON: {"verdict":"closed|partial|open","note":"1 короткая фраза почему"}'
     )
-    return [LLMMessage("system", system), LLMMessage("user", user)]
+    return [LLMMessage("system", reg.get("verify_own.system")), LLMMessage("user", user)]
 
 
 def final_messages(original: str, current: str, rounds_summary: str, locale: str = "ru", mode: str = "CONVERGENT") -> list[LLMMessage]:
-    system = (
-        "Ты — аналитик-синтезатор. По итогам дебата собери финальную сводку. "
-        f"{_mode(_MODE_FINAL, mode)} "
-        f"Пиши на {_lang(locale)} языке. Верни СТРОГО JSON по схеме, без пояснений."
-    )
+    system = reg.get("final.system", mode_rule=reg.get(_mode_key("final", mode)), lang=_lang(locale))
     user = (
         f"РЕЖИМ: {(mode or 'CONVERGENT').upper()}\n"
         f"ИСХОДНЫЙ ТЕЗИС: {original}\nФИНАЛЬНАЯ ВЕРСИЯ: {current}\n\nХОД ДЕБАТА:\n{rounds_summary}\n\n"
@@ -196,3 +131,9 @@ def final_messages(original: str, current: str, rounds_summary: str, locale: str
         ' "fundingBranches": ["направления для финансирования"]}'
     )
     return [LLMMessage("system", system), LLMMessage("user", user)]
+
+
+def inject_classify_messages(text: str, thesis: str, locale: str = "ru") -> list[LLMMessage]:
+    """Классификатор комментария пользователя во время дебата (human injection)."""
+    user = f"Комментарий: {text}\nТекущий тезис: {thesis or '(не менялся)'}"
+    return [LLMMessage("system", reg.get("inject.classify.system")), LLMMessage("user", user)]

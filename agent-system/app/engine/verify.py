@@ -65,6 +65,19 @@ def _is_repeat(text: str, prior: list[str], thresh: float = 0.6) -> bool:
     return False
 
 
+_FORM_MARKERS = (
+    "критери", "метрик", "определени", "операционализ", "уточнит", "горизонт", "квантифиц",
+    "формулировк", "порог", "единиц измерения", "не задаёт", "не задает", "не содержит критери",
+    "субъектив", "неоднозначн", "терминолог",
+)
+
+
+def _is_form_attack(text: str) -> bool:
+    """Атака про форму (критерии/метрики/определения), а не про содержание — по маркерам."""
+    low = (text or "").lower()
+    return sum(m in low for m in _FORM_MARKERS) >= 2
+
+
 async def run_verify(
     *,
     debate_id: str,
@@ -76,6 +89,7 @@ async def run_verify(
     locale: str = "ru",
     roles_map: dict[str, dict] | None = None,
     attack_timeout: int | None = None,
+    injections: dict | None = None,
 ) -> AsyncIterator[Event]:
     agents = [m for m in models if m in registry]
     timeout = attack_timeout or settings.attack_timeout_seconds
@@ -92,9 +106,43 @@ async def run_verify(
     anchor = Anchor(original=thesis, current=thesis)
     rounds_summary: list[str] = []
     rounds_without_improvement = 0
+    form_streak = 0          # сколько атак подряд про форму (критерии/метрики), а не про суть
+    had_substance = False    # была ли хоть одна содержательная атака / конкретный кандидат
+
+    _INJECT_LABEL = {"attack": "Атака (человек)", "clarify": "Уточнение рамки (человек)",
+                     "alternative": "Альтернативный тезис (человек)", "example": "Проверка примером (человек)"}
 
     for rnd in range(1, max_rounds + 1):
         yield "round.started", {"debateId": debate_id, "round": rnd}
+        if injections is not None:
+            injections["round"] = rnd
+            injections["thesis"] = anchor.current
+
+        # 0) HUMAN INJECTIONS — из очереди в этот раунд, наравне с атаками ИИ
+        attacks: list[dict] = []
+        pending = injections.pop("pending", []) if injections is not None else []
+        if injections is not None:
+            injections["pending"] = []
+        for i, inj in enumerate(pending):
+            text = (inj.get("text") or "").strip()
+            if not _valid_attack(text) or _is_repeat(text, anchor.closed + [a["content"] for a in attacks]):
+                yield "human.injection.rejected", {
+                    "debateId": debate_id, "round": rnd, "text": text,
+                    "reason": "не прошла проверку аргумента (слишком коротко/повтор) — переформулируйте конкретнее",
+                }
+                continue
+            verifier = agents[(rnd + i) % len(agents)]  # закрытие проверяет модель, не пользователь
+            attack_id = str(uuid.uuid4())
+            attacks.append({"attackId": attack_id, "agent": "HUMAN", "verifier": verifier,
+                            "role": _INJECT_LABEL.get(inj.get("type", "attack"), "Аргумент (человек)"),
+                            "content": text})
+            form_streak = 0
+            had_substance = True
+            yield "human.injection.applied", {
+                "debateId": debate_id, "round": rnd, "type": inj.get("type", "attack"),
+                "content": text, "assignedTo": verifier,
+                "metadata": {"attackId": attack_id, "author": "human"},
+            }
 
         # 1) АТАКИ — параллельно, эмитим по мере готовности
         async def _attack(agent_id: str, idx: int):
@@ -107,7 +155,6 @@ async def run_verify(
             return agent_id, role, text, err
 
         tasks = [asyncio.create_task(_attack(a, i)) for i, a in enumerate(agents)]
-        attacks: list[dict] = []
         # Эмитим атаки по мере готовности, но не ждём дольше attack_timeout: одна медленная
         # модель не должна держать весь раунд. Не успевшие — пропускаются в этом раунде.
         try:
@@ -120,6 +167,11 @@ async def run_verify(
                     continue
                 attack_id = str(uuid.uuid4())
                 attacks.append({"attackId": attack_id, "agent": agent_id, "role": role["name"], "content": text})
+                if _is_form_attack(text):
+                    form_streak += 1
+                else:
+                    form_streak = 0
+                    had_substance = True
                 yield "agent.attack.created", {
                     "debateId": debate_id, "eventId": str(uuid.uuid4()), "roundNumber": rnd,
                     "agent": agent_id, "role": role["name"], "content": text,
@@ -136,9 +188,11 @@ async def run_verify(
             yield "round.completed", {"debateId": debate_id, "round": rnd, "survived": 0, "total": 0}
             continue
 
-        # 2) УЛУЧШЕНИЕ — редактор переписывает тезис (3 блока)
+        # 2) УЛУЧШЕНИЕ — редактор переписывает тезис (3 блока). Если пошла череда критики формы
+        # (3+ атаки подряд про критерии/метрики) — форсируем «дай конкретный ответ».
         imp_text, imp_err = await _safe_generate(
-            lead, prompts.improve_messages(anchor, [a["content"] for a in attacks], locale, mode),
+            lead, prompts.improve_messages(anchor, [a["content"] for a in attacks], locale, mode,
+                                           force_answer=form_streak >= 3),
             max_tokens=1200, json_mode=True, timeout=timeout,
         )
         imp = parse_json(imp_text) or {}
@@ -156,10 +210,11 @@ async def run_verify(
             "stillWeak": imp.get("stillWeak", ""),
         }
 
-        # 3) ВЕРИФИКАЦИЯ — по ТЗ КАЖДЫЙ проверяет СВОЮ атаку (параллельно, эмитим по готовности)
+        # 3) ВЕРИФИКАЦИЯ — по ТЗ КАЖДЫЙ проверяет СВОЮ атаку; human-атаку проверяет назначенная модель
         async def _verify(a: dict):
+            checker = registry[a.get("verifier") or a["agent"]]
             text, err = await _safe_generate(
-                registry[a["agent"]], prompts.verify_own_messages(anchor.current, a["content"], locale),
+                checker, prompts.verify_own_messages(anchor.current, a["content"], locale),
                 max_tokens=200, json_mode=True, timeout=timeout,
             )
             verdict = (parse_json(text) or {}).get("verdict", "partial") if not err else "partial"
@@ -178,7 +233,8 @@ async def run_verify(
                     survived += 1
                     anchor.open.append(a["content"])
                 yield "attack.verified", {
-                    "debateId": debate_id, "attackId": a["attackId"], "agent": a["agent"], "verdict": verdict,
+                    "debateId": debate_id, "attackId": a["attackId"],
+                    "agent": a.get("verifier") or a["agent"], "verdict": verdict,
                 }
         except asyncio.TimeoutError:
             pass
@@ -192,7 +248,8 @@ async def run_verify(
                 survived += 1
                 anchor.open.append(a["content"])
                 yield "attack.verified", {
-                    "debateId": debate_id, "attackId": a["attackId"], "agent": a["agent"], "verdict": "open",
+                    "debateId": debate_id, "attackId": a["attackId"],
+                    "agent": a.get("verifier") or a["agent"], "verdict": "open",
                 }
 
         rounds_summary.append(
@@ -200,6 +257,23 @@ async def run_verify(
             f"Тезис: {anchor.current[:200]}"
         )
         yield "round.completed", {"debateId": debate_id, "round": rnd, "survived": survived, "total": len(attacks)}
+
+        # Если за 4 раунда так и нет ни одной содержательной атаки (только критика формы) —
+        # значит это открытый вопрос, а не тезис: переключаемся в Quantum (генерация ответов).
+        if rnd >= 4 and not had_substance:
+            yield "mode.switched", {
+                "debateId": debate_id, "from": "VERIFY", "to": "QUANTUM",
+                "reason": "4 раунда критики формы без конкретного ответа — переходим к генерации ответов",
+            }
+            from app.engine.quantum import run_quantum  # ленивый импорт: избегаем цикла
+            async for name, data in run_quantum(
+                debate_id=debate_id, thesis=thesis, models=agents, registry=registry,
+                locale=locale, attack_timeout=timeout, injections=injections,
+            ):
+                if name == "debate.started":
+                    continue  # уже был один debate.started; переход обозначен mode.switched
+                yield name, data
+            return
 
         # Стоп-условия (CONVERGENT): тезис выдержал все атаки, либо 3 раунда без улучшения
         if survived == 0:

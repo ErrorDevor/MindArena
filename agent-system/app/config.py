@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     # Модель приёмщика /debates/intake; пусто = авто по преференсу.
     intake_model: str = ""
 
+    # Модель классификатора режима /debates/detect; пусто = как у приёмщика.
+    classify_model: str = ""
+
+    # URL админки с переопределениями промптов (GET, JSON {"prompts": {...}}); пусто = только дефолты.
+    prompts_url: str = ""
+    prompts_ttl_seconds: int = 300
+
 
 settings = Settings()
 

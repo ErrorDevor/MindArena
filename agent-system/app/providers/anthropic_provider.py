@@ -7,11 +7,13 @@
 """
 from __future__ import annotations
 
-from anthropic import AsyncAnthropic
-from tenacity import retry, stop_after_attempt, wait_exponential
+from anthropic import APIConnectionError, APITimeoutError, AsyncAnthropic, InternalServerError, RateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.config import settings
 from app.providers.base import LLMMessage, LLMResult
+
+_TRANSIENT = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
 
 
 class AnthropicProvider:
@@ -22,9 +24,11 @@ class AnthropicProvider:
         self._client = AsyncAnthropic(
             api_key=settings.anthropic_api_key,
             timeout=settings.llm_timeout_seconds,
+            max_retries=0,
         )
 
-    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8))
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8),
+           retry=retry_if_exception_type(_TRANSIENT), reraise=True)
     async def generate(
         self,
         messages: list[LLMMessage],

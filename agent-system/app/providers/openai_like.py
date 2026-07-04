@@ -1,14 +1,18 @@
 """Провайдер для OpenAI и всех OpenAI-совместимых API (GLM, Kimi, Deepseek).
 
 Один класс, разные base_url/api_key/model. Anthropic и Gemini — отдельные адаптеры.
+Ретраим только транзиентное (сеть/таймаут/5xx/429): auth и невалидный запрос повторять
+бессмысленно, а ретраи SDK отключены (max_retries=0), чтобы не дублировать tenacity.
 """
 from __future__ import annotations
 
-from openai import AsyncOpenAI
-from tenacity import retry, stop_after_attempt, wait_exponential
+from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, InternalServerError, RateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.config import settings
 from app.providers.base import LLMMessage, LLMResult
+
+_TRANSIENT = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
 
 
 class OpenAILikeProvider:
@@ -19,9 +23,11 @@ class OpenAILikeProvider:
             api_key=api_key,
             base_url=base_url,
             timeout=settings.llm_timeout_seconds,
+            max_retries=0,
         )
 
-    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8))
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8),
+           retry=retry_if_exception_type(_TRANSIENT), reraise=True)
     async def generate(
         self,
         messages: list[LLMMessage],

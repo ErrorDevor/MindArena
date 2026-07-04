@@ -7,10 +7,18 @@
 from __future__ import annotations
 
 from google import genai
-from tenacity import retry, stop_after_attempt, wait_exponential
+from google.genai import errors as genai_errors
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from app.config import settings
 from app.providers.base import LLMMessage, LLMResult
+
+
+def _is_transient(e: BaseException) -> bool:
+    # Ретраим 5xx/429 и сетевые сбои; невалидный ключ (400/401/403) повторять бессмысленно.
+    if isinstance(e, genai_errors.APIError):
+        return e.code in (429, 500, 502, 503, 504)
+    return isinstance(e, (ConnectionError, TimeoutError))
 
 
 class GeminiProvider:
@@ -20,7 +28,8 @@ class GeminiProvider:
         self.model = settings.gemini_model
         self._client = genai.Client(api_key=settings.gemini_api_key)
 
-    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8))
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=8),
+           retry=retry_if_exception(_is_transient), reraise=True)
     async def generate(
         self,
         messages: list[LLMMessage],

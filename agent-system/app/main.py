@@ -19,9 +19,10 @@ from pathlib import Path
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
+from app import prompt_registry
 from app.config import configured_models, settings
 from app.engine import prompts
 from app.engine.jsonutil import parse_json
@@ -145,25 +146,67 @@ def _intake_order(registry: dict, requested: str | None) -> list[str]:
     return order
 
 
+_VERIFY_SUBTYPES = ("CONVERGENT", "DIVERGENT", "GEOPOLITICAL")
+_QUANTUM_SUBTYPES = ("IDEAS", "MECHANISMS", "SOLUTIONS", "ANOMALIES")
+_CLASSIFY_BORDERLINE = 0.6
+
+
+async def _classify(thesis: str, registry: dict, locale: str = "ru") -> dict:
+    """Определяет режим по ТЗ дешёвой моделью; при сбое — эвристика engine/mode.py.
+
+    Возвращает: strategy (VERIFY|QUANTUM), mode (подтип VERIFY), exploreType (подтип QUANTUM),
+    confidence, borderline (низкая уверенность → показать переключатель), reason, by.
+    """
+    for pid in _intake_order(registry, settings.classify_model or None):
+        text, err = await _safe_generate(
+            registry[pid], prompts.classify_messages(thesis, locale),
+            max_tokens=150, json_mode=True, timeout=30,
+        )
+        if err:
+            continue
+        d = parse_json(text) or {}
+        strat = str(d.get("strategy", "")).upper()
+        if strat not in ("VERIFY", "QUANTUM"):
+            continue
+        sub = str(d.get("subtype", "")).upper()
+        try:
+            conf = max(0.0, min(1.0, float(d.get("confidence", 0))))
+        except (TypeError, ValueError):
+            conf = 0.0
+        mode = sub if (strat == "VERIFY" and sub in _VERIFY_SUBTYPES) else "CONVERGENT"
+        explore = sub if (strat == "QUANTUM" and sub in _QUANTUM_SUBTYPES) else ""
+        log.info("[classify] %s/%s conf=%.2f моделью %s", strat, sub or "-", conf, pid)
+        return {
+            "strategy": strat, "mode": mode, "exploreType": explore,
+            "confidence": conf, "borderline": conf < _CLASSIFY_BORDERLINE,
+            "reason": str(d.get("reason", "")), "by": pid,
+        }
+    strat, reason = detect_mode(thesis)   # фолбэк: ключевые слова
+    return {
+        "strategy": strat, "mode": "CONVERGENT", "exploreType": "",
+        "confidence": 0.0, "borderline": True, "reason": reason + " (эвристика)", "by": "heuristic",
+    }
+
+
 class Participant(BaseModel):
     model: str          # id агента (см. GET /roles → availableModels в /health): CLAUDE, KIMI, DEEPSEEK, ...
     role: str = ""      # id роли из GET /roles (strategist/architect/...) ИЛИ произвольная метка; "" = авто
 
 
 class RunRequest(BaseModel):
-    thesis: str
-    mode: str = "CONVERGENT"  # CONVERGENT | DIVERGENT | GEOPOLITICAL
-    strategy: str = "VERIFY"  # VERIFY (петля истины) | QUANTUM (эволюц. дерево); "" = авто
-    maxRounds: int = settings.debate_max_rounds       # VERIFY: раундов; для QUANTUM см. quantumGenerations
-    models: list[str] = DEFAULT_CONSILIUM             # состав по id
-    participants: list[Participant] | None = None     # {model, role}; перекрывает models
-    attackTimeoutSeconds: int | None = None           # ожидание ответов в раунде/поколении
-    quantumGenerations: int | None = None             # QUANTUM: число поколений
-    quantumBranchesPerGen: int | None = None          # QUANTUM: сколько веток за поколение
-    quantumTopK: int | None = None                    # QUANTUM: сколько лучших проходит дальше
-    debateId: str | None = None                       # id на стороне бэкенда
-    budgetUsd: float | None = None                    # потолок стоимости (пока не форсится)
-    locale: str = "ru"                                # язык вывода
+    thesis: str = Field(description="Тема или тезис пользователя")
+    strategy: str = Field("VERIFY", description="VERIFY (петля критики) | QUANTUM (перебор идей). Пустая строка \"\" = авто-определение по ТЗ")
+    mode: str = Field("CONVERGENT", description="Подтип VERIFY: CONVERGENT | DIVERGENT | GEOPOLITICAL")
+    maxRounds: int = Field(settings.debate_max_rounds, description="VERIFY: число раундов (1–10)")
+    models: list[str] = Field(default=DEFAULT_CONSILIUM, description="Состав консилиума по id; модели без ключа отсеиваются")
+    participants: list[Participant] | None = Field(None, description="[{model, role}] — кто какую роль занимает; перекрывает models")
+    attackTimeoutSeconds: int | None = Field(None, description="Ожидание ответов в раунде/поколении, сек (5–300; иначе из env)")
+    quantumGenerations: int | None = Field(None, description="QUANTUM: число поколений (1–6; иначе из env)")
+    quantumBranchesPerGen: int | None = Field(None, description="QUANTUM: веток за поколение (2–60; иначе из env)")
+    quantumTopK: int | None = Field(None, description="QUANTUM: сколько лучших проходит дальше (1–20; иначе из env)")
+    debateId: str | None = Field(None, description="Id на стороне бэкенда; если нет — сгенерируется")
+    budgetUsd: float | None = Field(None, description="Потолок стоимости (пока не форсится)")
+    locale: str = Field("ru", description="Язык вывода агентов")
 
 
 def _resolve_roster(req: "RunRequest", registry: dict) -> tuple[list[str], dict | None]:
@@ -195,6 +238,21 @@ class DetectRequest(BaseModel):
     thesis: str
     models: list[str] = DEFAULT_CONSILIUM
     maxRounds: int = settings.debate_max_rounds
+
+
+class DetectResponse(BaseModel):
+    canRun: bool = Field(description="Можно ли запускать: ввод осмыслен и есть хотя бы одна модель с ключом")
+    reason: str = Field(description="Причина отказа либо объяснение выбранного режима")
+    strategy: str = Field(description="VERIFY (проверить утверждение) или QUANTUM (открытый вопрос → генерировать ответы)")
+    mode: str = Field(description="Подтип VERIFY: CONVERGENT | DIVERGENT | GEOPOLITICAL")
+    exploreType: str = Field(description="Подтип QUANTUM: IDEAS | MECHANISMS | SOLUTIONS | ANOMALIES (пусто для VERIFY)")
+    confidence: float = Field(description="Уверенность классификатора 0–1")
+    borderline: bool = Field(description="Низкая уверенность → покажите переключатель на alternative")
+    alternative: str = Field(description="Другой режим для переключателя (VERIFY↔QUANTUM)")
+    classifiedBy: str = Field(description="Какая модель классифицировала режим (или 'heuristic' при фолбэке)")
+    availableModels: list[str] = Field(description="Реально поднятые модели, которыми пойдёт дебат")
+    estimatedCostUsd: float = Field(description="Грубая оценка стоимости, уточняется по факту")
+    estimatedRounds: int
 
 
 class BaselineRequest(BaseModel):
@@ -245,17 +303,56 @@ async def roles() -> dict:
     return {"roles": [{"id": r["id"], "name": r["name"], "lens": r["lens"]} for r in ROLES]}
 
 
-@app.post("/debates/detect", tags=["дебаты"], summary="Пред-старт: режим, стоимость, можно ли запускать")
-async def detect(req: DetectRequest, x_agent_key: str | None = Header(default=None)) -> dict:
-    """Пред-запускной экран: стоит ли запускать, какой режим, примерная стоимость. Дебат НЕ запускается."""
+@app.get("/prompts", tags=["служебные"], summary="Эффективные промпты агентов и схема переопределения")
+async def prompts_view(x_agent_key: str | None = Header(default=None)) -> dict:
+    """Все промпты агентов: текущий текст, источник (default/override) и допустимые $плейсхолдеры.
+
+    Переопределение: задать `PROMPTS_URL` в env сервиса — GET по нему должен вернуть JSON
+    `{"prompts": {"<ключ>": "<текст>", ...}}` (ключи из этого ответа). Неизвестные ключи игнорируются.
+    Если URL недоступен/вернул мусор — работают дефолты. Кэш обновляется раз в PROMPTS_TTL_SECONDS.
+    """
     _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
+    return {
+        "promptsUrl": settings.prompts_url or None,
+        "ttlSeconds": settings.prompts_ttl_seconds,
+        "overridesLoaded": prompt_registry.overrides_count(),
+        "prompts": {
+            key: {
+                "text": prompt_registry.get(key),
+                "source": prompt_registry.source(key),
+                "placeholders": prompt_registry.PLACEHOLDERS.get(key, []),
+            }
+            for key in prompt_registry.DEFAULTS
+        },
+    }
+
+
+@app.post("/debates/detect", tags=["дебаты"], summary="Пред-старт: режим, стоимость, можно ли запускать",
+          response_model=DetectResponse)
+async def detect(req: DetectRequest, x_agent_key: str | None = Header(default=None)) -> dict:
+    """Пред-запускной экран: определяет режим (Verify/Explore + подтип), стоимость, можно ли запускать.
+
+    Классификация — дешёвой моделью по ТЗ; при низкой уверенности `borderline=true` (фронт показывает
+    переключатель Verify↔Explore). Дебат НЕ запускается.
+    """
+    _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
     reject = _validate_thesis(req.thesis)
-    strategy, reason = detect_mode(req.thesis)
-    available = [m for m in req.models if m in build_registry()]
+    registry = build_registry()
+    available = [m for m in req.models if m in registry]
+    cls = await _classify(req.thesis, registry, "ru") if available else None
+    strategy = cls["strategy"] if cls else "VERIFY"
     return {
         "canRun": reject is None and bool(available),
-        "reason": reject or (reason if available else "нет доступных моделей (проверь ключи)"),
+        "reason": reject or (cls["reason"] if cls else "нет доступных моделей (проверь ключи)"),
         "strategy": strategy,
+        "mode": cls["mode"] if cls else "CONVERGENT",
+        "exploreType": cls["exploreType"] if cls else "",
+        "confidence": cls["confidence"] if cls else 0.0,
+        "borderline": cls["borderline"] if cls else True,
+        "alternative": ("QUANTUM" if strategy == "VERIFY" else "VERIFY"),
+        "classifiedBy": cls["by"] if cls else "",
         "availableModels": available,
         "estimatedCostUsd": _estimate_cost(strategy, len(available), req.maxRounds),
         "estimatedRounds": req.maxRounds,
@@ -266,6 +363,7 @@ async def detect(req: DetectRequest, x_agent_key: str | None = Header(default=No
 async def baseline(req: BaselineRequest, x_agent_key: str | None = Header(default=None)) -> dict:
     """Наивный «один промпт» одной моделью — эталон для сравнения с результатом консилиума."""
     _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
     reject = _validate_thesis(req.thesis)
     if reject:
         raise HTTPException(status_code=400, detail=reject)
@@ -274,7 +372,7 @@ async def baseline(req: BaselineRequest, x_agent_key: str | None = Header(defaul
     if provider is None:
         raise HTTPException(status_code=400, detail="нет доступных моделей (проверь ключи)")
     text, err = await _safe_generate(
-        provider, prompts.baseline_messages(req.thesis, req.locale), max_tokens=600,
+        provider, prompts.baseline_messages(req.thesis, req.locale), max_tokens=600, timeout=60,
     )
     if err:
         raise HTTPException(status_code=502, detail=err)
@@ -290,6 +388,7 @@ async def intake(req: IntakeRequest, x_agent_key: str | None = Header(default=No
     с согласованным `thesis`. Память = переданная история, сервис состояния не хранит.
     """
     _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
     if not req.messages or req.messages[-1].role != "user":
         raise HTTPException(status_code=422, detail="messages пуст или последний ход не от пользователя")
     registry = build_registry()
@@ -304,7 +403,7 @@ async def intake(req: IntakeRequest, x_agent_key: str | None = Header(default=No
     data: dict = {}
     used: str | None = None
     for pid in order:
-        text, err = await _safe_generate(registry[pid], msgs, max_tokens=700, json_mode=True)
+        text, err = await _safe_generate(registry[pid], msgs, max_tokens=700, json_mode=True, timeout=45)
         if err:
             continue
         parsed = parse_json(text) or {}
@@ -409,6 +508,7 @@ async def ping_status(check_id: str, x_agent_key: str | None = Header(default=No
 async def run_debate(req: RunRequest, x_agent_key: str | None = Header(default=None)):
     """Запускает реальный дебат и стримит ход как SSE."""
     _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
     reject = _validate_thesis(req.thesis)
     if reject:
         raise HTTPException(status_code=400, detail=reject)
@@ -418,11 +518,15 @@ async def run_debate(req: RunRequest, x_agent_key: str | None = Header(default=N
         raise HTTPException(status_code=400, detail="нет доступных моделей (проверь ключи)")
 
     debate_id = req.debateId or str(uuid.uuid4())
-    strategy = req.strategy or detect_mode(req.thesis)[0]  # "" => авто (VERIFY/QUANTUM)
+    strategy, mode = (req.strategy or "").upper(), req.mode
+    if not strategy:                          # авто-определение режима по ТЗ
+        cls = await _classify(req.thesis, registry, req.locale)
+        strategy, mode = cls["strategy"], cls["mode"]
 
     tuning = _tuning(req)
-    log.info("[%s] debate START strategy=%s models=%s roster=%s tuning=%s",
-             debate_id, strategy, available, bool(roles_map), tuning)
+    injections = _register_injections(debate_id, strategy)
+    log.info("[%s] debate START strategy=%s mode=%s models=%s roster=%s tuning=%s",
+             debate_id, strategy, mode, available, bool(roles_map), tuning)
 
     async def event_gen():
         # Стартовый паддинг ~2КБ: пробивает буфер браузера, который иначе копит поток до конца.
@@ -430,7 +534,7 @@ async def run_debate(req: RunRequest, x_agent_key: str | None = Header(default=N
         n = 0
         try:
             async for name, data in _engine_stream(
-                debate_id, req.thesis, req.mode, strategy, available, registry, req.locale, roles_map, tuning,
+                debate_id, req.thesis, mode, strategy, available, registry, req.locale, roles_map, tuning, injections,
             ):
                 n += 1
                 log.info("[%s] event #%d %s | %s", debate_id, n, name, _brief(data))
@@ -439,6 +543,8 @@ async def run_debate(req: RunRequest, x_agent_key: str | None = Header(default=N
         except Exception as e:  # noqa: BLE001
             log.exception("[%s] debate FAILED после %d событий", debate_id, n)
             yield _evt("debate.failed", {"debateId": debate_id, "reason": f"{type(e).__name__}: {e}"})
+        finally:
+            injections["done"] = True
 
     return EventSourceResponse(
         event_gen(),
@@ -450,20 +556,100 @@ def _evt(event: str, data: dict) -> dict:
     return {"event": event, "data": json.dumps(data, ensure_ascii=False)}
 
 
-def _engine_stream(debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning):
+def _engine_stream(debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning, injections=None):
     """Выбирает движок по стратегии: QUANTUM (дерево идей) или VERIFY (петля истины)."""
     if (strategy or "").upper() == "QUANTUM":
         return run_quantum(
             debate_id=debate_id, thesis=thesis, models=models, registry=registry, locale=locale,
             max_generations=tuning["q_generations"] or tuning["max_rounds"],
             branches_per_gen=tuning["q_branches"], top_k=tuning["q_top_k"],
-            attack_timeout=tuning["attack_timeout"],
+            attack_timeout=tuning["attack_timeout"], injections=injections,
         )
     return run_verify(
         debate_id=debate_id, thesis=thesis, mode=mode, models=models,
         max_rounds=tuning["max_rounds"], registry=registry, locale=locale,
-        roles_map=roles_map, attack_timeout=tuning["attack_timeout"],
+        roles_map=roles_map, attack_timeout=tuning["attack_timeout"], injections=injections,
     )
+
+
+# --- Human injection: очередь комментариев пользователя в идущий дебат ---
+# Комментарий классифицируется дешёвой моделью (attack/clarify/alternative/example/redirect/noise)
+# и входит в СЛЕДУЮЩИЙ раунд (VERIFY) или поколение (QUANTUM) наравне с ходами моделей.
+_INJECT: dict[str, dict] = {}
+
+
+def _register_injections(debate_id: str, strategy: str) -> dict:
+    entry = {"pending": [], "round": 0, "generation": 0, "thesis": "",
+             "strategy": strategy, "done": False, "ts": time.time()}
+    _INJECT[debate_id] = entry
+    return entry
+
+
+def _gc_injections() -> None:
+    now = time.time()
+    for k in [k for k, v in _INJECT.items() if v.get("done") and now - v["ts"] > _DEBATE_TTL]:
+        _INJECT.pop(k, None)
+
+
+_INJECT_TYPES = ("attack", "clarify", "alternative", "example", "redirect", "noise")
+
+
+class InjectRequest(BaseModel):
+    text: str = Field(description="Свободный текст комментария пользователя (тип определит система)")
+
+
+@app.post("/debates/{debate_id}/inject", tags=["дебаты"],
+          summary="Human injection: комментарий пользователя в идущий дебат")
+async def inject(debate_id: str, req: InjectRequest, x_agent_key: str | None = Header(default=None)) -> dict:
+    """Комментарий классифицируется лёгкой моделью и встаёт в очередь на ближайший раунд/поколение.
+
+    Ответ: `status` = `queued` (принят, поле `willApplyRound`/`willApplyGeneration`) или
+    `rejected` (noise/слишком коротко — показать пользователю `reason` и попросить переформулировать).
+    Если дебат уже завершён — 409. Тип определяется автоматически: attack / clarify / alternative /
+    example (redirect в MVP приравнен к alternative). В петле аргумент помечен author=human, отвечает
+    на него редактор, а закрытие проверяет назначенная модель (не пользователь).
+    """
+    _check_auth(x_agent_key)
+    entry = _INJECT.get(debate_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="неизвестный debateId (возможно, истёк)")
+    if entry["done"]:
+        raise HTTPException(status_code=409, detail="дебат уже завершён — инъекция не применена")
+
+    text = (req.text or "").strip()
+    if len(text) < 15:
+        return {"status": "rejected", "reason": "слишком коротко — сформулируйте аргумент конкретнее"}
+
+    registry = build_registry()
+    inj_type, reason = "attack", ""
+    for pid in _intake_order(registry, None):
+        out, err = await _safe_generate(
+            registry[pid], prompts.inject_classify_messages(text, entry.get("thesis", "")),
+            max_tokens=100, json_mode=True, timeout=20,
+        )
+        if err:
+            continue
+        d = parse_json(out) or {}
+        t = str(d.get("type", "")).lower()
+        if t in _INJECT_TYPES:
+            inj_type, reason = t, str(d.get("reason", ""))
+            break
+
+    if inj_type == "noise":
+        return {"status": "rejected",
+                "reason": reason or "не удалось встроить как аргумент — попробуйте конкретнее"}
+    if inj_type == "redirect":
+        inj_type = "alternative"  # MVP: полноценный redirect с архивацией веток — позже
+
+    entry["pending"].append({"text": text, "type": inj_type, "author": "human"})
+    is_quantum = entry["strategy"] == "QUANTUM"
+    result = {"status": "queued", "type": inj_type, "author": "human"}
+    if is_quantum:
+        result["willApplyGeneration"] = entry["generation"] + 1
+    else:
+        result["willApplyRound"] = entry["round"] + 1
+    log.info("[%s] inject queued type=%s: %s", debate_id, inj_type, text[:80])
+    return result
 
 
 # --- Дебат через ОПРОС (для браузеров, где SSE-поток буферизуется) ---
@@ -481,13 +667,13 @@ def _gc_debates() -> None:
         _DEBATES.pop(k, None)
 
 
-async def _run_debate_bg(debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning) -> None:
+async def _run_debate_bg(debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning, injections) -> None:
     entry = _DEBATES[debate_id]
     log.info("[%s] debate START (poll) strategy=%s models=%s roster=%s tuning=%s", debate_id, strategy, models, bool(roles_map), tuning)
     n = 0
     try:
         async for name, data in _engine_stream(
-            debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning,
+            debate_id, thesis, mode, strategy, models, registry, locale, roles_map, tuning, injections,
         ):
             n += 1
             log.info("[%s] event #%d %s | %s", debate_id, n, name, _brief(data))
@@ -498,12 +684,14 @@ async def _run_debate_bg(debate_id, thesis, mode, strategy, models, registry, lo
         entry["events"].append({"event": "debate.failed", "data": {"debateId": debate_id, "reason": f"{type(e).__name__}: {e}"}})
     finally:
         entry["done"] = True
+        injections["done"] = True
 
 
 @app.post("/debates/start", tags=["дебаты"], summary="Запустить дебат в фоне (для опроса), вернуть debateId")
 async def debate_start(req: RunRequest, x_agent_key: str | None = Header(default=None)) -> dict:
     """Запускает дебат в фоне и сразу отдаёт debateId. Ход забирать через GET /debates/{id}/events."""
     _check_auth(x_agent_key)
+    await prompt_registry.ensure_fresh()
     reject = _validate_thesis(req.thesis)
     if reject:
         raise HTTPException(status_code=400, detail=reject)
@@ -512,12 +700,17 @@ async def debate_start(req: RunRequest, x_agent_key: str | None = Header(default
     if not available:
         raise HTTPException(status_code=400, detail="нет доступных моделей (проверь ключи)")
     _gc_debates()
+    _gc_injections()
     debate_id = req.debateId or str(uuid.uuid4())
-    strategy = req.strategy or detect_mode(req.thesis)[0]
+    strategy, mode = (req.strategy or "").upper(), req.mode
+    if not strategy:                          # авто-определение режима по ТЗ
+        cls = await _classify(req.thesis, registry, req.locale)
+        strategy, mode = cls["strategy"], cls["mode"]
     entry = {"events": [], "done": False, "ts": time.time(), "task": None}
     _DEBATES[debate_id] = entry
+    injections = _register_injections(debate_id, strategy)
     entry["task"] = asyncio.create_task(
-        _run_debate_bg(debate_id, req.thesis, req.mode, strategy, available, registry, req.locale, roles_map, _tuning(req))
+        _run_debate_bg(debate_id, req.thesis, mode, strategy, available, registry, req.locale, roles_map, _tuning(req), injections)
     )
     roster = [
         {"model": m, "role": ((roles_map or {}).get(m, {}).get("name")) or "авто (ротация)"}
@@ -533,6 +726,7 @@ async def debate_events(debate_id: str, since: int = 0, x_agent_key: str | None 
     entry = _DEBATES.get(debate_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="неизвестный debateId (возможно, истёк)")
+    since = max(0, since)
     return {
         "debateId": debate_id,
         "done": entry["done"],

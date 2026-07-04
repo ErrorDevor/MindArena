@@ -14,8 +14,10 @@ from typing import AsyncIterator
 from app.config import settings
 from app.engine import prompts
 from app.engine.jsonutil import parse_json
-from app.engine.verify import _pick_lead, _safe_generate, Event
+from app.engine.verify import _is_repeat, _pick_lead, _safe_generate, Event
 from app.providers.base import LLMProvider
+
+_SCORE_CHUNK = 12  # оценка веток батчами: один гигантский запрос обрезает JSON и обнуляет оценки
 
 
 def _clamp(v) -> int:
@@ -36,6 +38,7 @@ async def run_quantum(
     branches_per_gen: int | None = None,
     top_k: int | None = None,
     attack_timeout: int | None = None,
+    injections: dict | None = None,
 ) -> AsyncIterator[Event]:
     agents = [m for m in models if m in registry]
     lead = _pick_lead(registry)
@@ -57,6 +60,32 @@ async def run_quantum(
 
     for gen in range(1, generations + 1):
         seed = [s["text"] for s in survivors]
+        branches: list[dict] = []
+
+        # 0) HUMAN INJECTIONS — гипотезы пользователя входят в пул поколения наравне с ветками моделей
+        if injections is not None:
+            injections["generation"] = gen
+            injections["thesis"] = thesis
+            pending = injections.get("pending") or []
+            injections["pending"] = []
+            for inj in pending:
+                text = (inj.get("text") or "").strip()
+                if len(text) < 12:
+                    yield "human.injection.rejected", {
+                        "debateId": debate_id, "generation": gen, "text": text,
+                        "reason": "слишком коротко для гипотезы — переформулируйте конкретнее",
+                    }
+                    continue
+                bid = uuid.uuid4().hex[:8]
+                branches.append({"id": bid, "text": text, "agent": "HUMAN", "generation": gen, "score": 0})
+                yield "human.injection.applied", {
+                    "debateId": debate_id, "generation": gen, "type": "hypothesis",
+                    "content": text, "assignedTo": "консилиум (оценка наравне с ветками)",
+                    "metadata": {"branchId": bid, "author": "human"},
+                }
+                yield "branch.created", {
+                    "debateId": debate_id, "id": bid, "generation": gen, "lens": "HUMAN", "text": text,
+                }
 
         # 1) ГЕНЕРАЦИЯ — все модели параллельно
         async def _gen(agent_id: str):
@@ -68,12 +97,14 @@ async def run_quantum(
             return agent_id, ideas
 
         tasks = [asyncio.create_task(_gen(a)) for a in agents]
-        branches: list[dict] = []
         try:
             for fut in asyncio.as_completed(tasks, timeout=timeout):
                 agent_id, ideas = await fut
                 for idea in ideas:
                     if not isinstance(idea, str) or len(idea.strip()) < 12:
+                        continue
+                    # дубликаты между моделями (и с выжившими прошлого поколения) не пускаем
+                    if _is_repeat(idea, [b["text"] for b in branches] + seed):
                         continue
                     bid = uuid.uuid4().hex[:8]
                     b = {"id": bid, "text": idea.strip(), "agent": agent_id, "generation": gen, "score": 0}
@@ -92,15 +123,23 @@ async def run_quantum(
         if not branches:
             break
 
-        # 2) ОЦЕНКА — ведущая модель, один проход по всем веткам поколения
-        score_text, _ = await _safe_generate(
-            lead, prompts.quantum_score_messages(thesis, branches, locale),
-            max_tokens=1400, json_mode=True, timeout=timeout,
-        )
-        scores = {
-            s.get("id"): s for s in (parse_json(score_text) or {}).get("scores", [])
-            if isinstance(s, dict) and s.get("id")
-        }
+        # 2) ОЦЕНКА — батчами: один гигантский запрос по 40+ веткам обрезает JSON и обнуляет хвост
+        chunks = [branches[i:i + _SCORE_CHUNK] for i in range(0, len(branches), _SCORE_CHUNK)]
+        score_tasks = [
+            asyncio.create_task(_safe_generate(
+                lead, prompts.quantum_score_messages(thesis, chunk, locale),
+                max_tokens=1400, json_mode=True, timeout=timeout,
+            ))
+            for chunk in chunks
+        ]
+        scores: dict = {}
+        for res in await asyncio.gather(*score_tasks, return_exceptions=True):
+            if isinstance(res, Exception):
+                continue
+            text, _err = res
+            for s in (parse_json(text) or {}).get("scores", []):
+                if isinstance(s, dict) and s.get("id"):
+                    scores[s["id"]] = s
         for b in branches:
             sc = scores.get(b["id"], {})
             b["score"] = _clamp(sc.get("score", 0))
